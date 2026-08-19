@@ -1,5 +1,30 @@
 # PROF HARTI Academy — Change Log
 
+## 2026-08-19 — PHASE 1 login backend completed
+
+Completed and validated:
+- TASK-101: PostgreSQL/Drizzle `users` schema with roles, account status, preferred language, unique phone, password hash and timestamps.
+- TASK-102: secure password hashing and verification using Node.js `scrypt`, random salt and timing-safe comparison.
+- TASK-103: Moroccan phone normalization to E.164 `+212...` format.
+- TASK-104: `POST /api/v1/auth/login` using Moroccan WhatsApp phone + password only; no public signup endpoint.
+- TASK-105: database-backed opaque sessions, hashed session tokens, seven-day expiry and `HttpOnly`/`SameSite=Lax` cookie handling.
+
+Login behavior:
+- Invalid/malformed phone/password inputs are rejected safely.
+- Invalid credentials never expose password hashes.
+- Disabled accounts are rejected.
+- Successful login updates `lastLoginAt`, returns a safe user profile and creates a secure server-side session.
+- No public `/register` or signup endpoint exists.
+
+Validation on the PHASE 1 branch:
+- `npm run typecheck` — PASS
+- `npm run lint` — PASS
+- `npm run build` — PASS
+- Vercel — PASS
+
+Database note:
+- The code and schema are ready, but no Neon PostgreSQL project currently exists in the connected Neon account. Runtime login testing requires provisioning PostgreSQL and applying the PHASE 1 schema before creating test users.
+
 ## 2026-08-19 — PHASE 1 auth foundation started
 
 Completed and validated:
@@ -12,8 +37,6 @@ Validation on the PHASE 1 branch:
 - `npm run lint` — PASS
 - `npm run build` — PASS
 - Vercel — PASS
-
-No login endpoint, session handling, role middleware or public signup has been added yet.
 
 ## 2026-08-19 — PHASE 0 validated
 
