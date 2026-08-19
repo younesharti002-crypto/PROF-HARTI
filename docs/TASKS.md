@@ -14,9 +14,9 @@ Mark tasks: `[ ]` not started · `[-]` in progress · `[x]` complete. Do not mar
 - [x] TASK-008 Create documentation structure
 - [x] TASK-009 Add Arabic/French i18n skeleton
 - [x] TASK-010 Create mobile-first landing page
-- [-] TASK-011 Run typecheck
-- [-] TASK-012 Run lint
-- [-] TASK-013 Run production build
+- [x] TASK-011 Run typecheck
+- [x] TASK-012 Run lint
+- [x] TASK-013 Run production build
 
 PHASE 0 refinement status:
 - Real Prof Harti portrait integrated with `next/image`.
@@ -25,8 +25,9 @@ PHASE 0 refinement status:
 - Public student signup/register CTAs removed.
 - Main CTA: `دخول المشتركين / Espace abonnés`.
 - Secondary CTA: `اكتشف العرض / Découvrir l’offre`.
-- No PHASE 1 backend/authentication implemented.
-- TASK-011/012/013 remain in progress until validation passes on this revision.
+- No PHASE 1 backend/authentication implemented during PHASE 0.
+- Typecheck, lint and production build passed in GitHub CI.
+- Vercel deployment passed after correcting the project Framework Preset to Next.js.
 
 Definition of done: app starts, landing works, AR/FR + RTL/LTR work, no business features, checks pass.
 
