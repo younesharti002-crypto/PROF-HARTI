@@ -34,8 +34,8 @@ Definition of done: app starts, landing works, AR/FR + RTL/LTR work, no business
 # PHASE 1 — Auth & Users + Subscriber Entitlement
 
 - [x] TASK-101 Create users schema
-- [ ] TASK-102 Add password hashing
-- [ ] TASK-103 Add Moroccan phone normalization
+- [x] TASK-102 Add password hashing
+- [x] TASK-103 Add Moroccan phone normalization
 - [ ] TASK-104 Add login endpoint
 - [ ] TASK-105 Add session handling
 - [ ] TASK-106 Add role middleware
