@@ -1,5 +1,22 @@
 # PROF HARTI Academy — Change Log
 
+## 2026-08-19 — PHASE 0 validated
+
+PHASE 0 technical validation is complete on the review branch.
+
+### Passed
+- `npm run typecheck` — PASS
+- `npm run lint` — PASS
+- `npm run build` — PASS
+- Vercel deployment — PASS after correcting the Vercel Framework Preset from NestJS to Next.js and removing build/output overrides.
+
+### Product state
+- Subscriber-only public messaging is in place.
+- Arabic/French and RTL/LTR foundation is in place.
+- Real supplied portrait is integrated.
+- No PHASE 1 authentication or subscription backend was implemented during PHASE 0.
+- Visual direction is currently awaiting Prof Harti stakeholder feedback; minor visual copy/layout refinements may still be applied without reopening the technical bootstrap gate.
+
 ## 2026-08-19 — PHASE 0 subscriber-only visual refinement
 
 Scope: PHASE 0 frontend/bootstrap only. No authentication, user-management, subscription backend, course backend, live backend or quiz backend was added.
@@ -14,9 +31,6 @@ Scope: PHASE 0 frontend/bootstrap only. No authentication, user-management, subs
 - Cairo remains the Arabic font; Poppins remains the French/Latin font.
 - Merged SpecKit v1.1 subscriber-only requirements into README, SPEC, Architecture, Database, API, Security, Tasks and Master Prompt.
 - Added `.github/workflows/phase0-ci.yml` to run install, typecheck, lint and production build on the PHASE 0 review branch.
-
-### Validation status
-TASK-011/012/013 remain in progress until CI passes on this revision. A local syntax-transpile check passed for the TypeScript/TSX sources, but local dependency installation could not complete because the execution environment could not resolve the npm registry.
 
 ## 2026-08-19 — SpecKit v1.1 — Subscriber-only access model
 
