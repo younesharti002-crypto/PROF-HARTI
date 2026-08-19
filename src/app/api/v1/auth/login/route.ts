@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { authenticateWithPhoneAndPassword } from "@/lib/auth/login";
+import {
+  createSessionForUser,
+  getSessionCookieOptions,
+  SESSION_COOKIE_NAME,
+} from "@/lib/auth/session";
 
 const JSON_HEADERS = {
   "Cache-Control": "no-store",
@@ -60,21 +65,31 @@ export async function POST(request: Request): Promise<NextResponse> {
       return errorResponse(401, "INVALID_CREDENTIALS", "Invalid phone or password.");
     }
 
-    return NextResponse.json(
+    const session = await createSessionForUser(result.user.id);
+
+    const response = NextResponse.json(
       {
         data: {
           user: result.user,
-          session: null,
+          session: {
+            expiresAt: session.expiresAt.toISOString(),
+          },
         },
-        meta: {
-          sessionPending: true,
-        },
+        meta: {},
       },
       {
         status: 200,
         headers: JSON_HEADERS,
       },
     );
+
+    response.cookies.set(
+      SESSION_COOKIE_NAME,
+      session.token,
+      getSessionCookieOptions(session.expiresAt),
+    );
+
+    return response;
   } catch (error) {
     console.error("auth.login.failed", {
       error: error instanceof Error ? error.message : "unknown_error",
