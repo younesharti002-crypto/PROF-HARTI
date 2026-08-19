@@ -1,5 +1,20 @@
 # PROF HARTI Academy — Change Log
 
+## 2026-08-19 — PHASE 1 auth foundation started
+
+Completed and validated:
+- TASK-101: PostgreSQL/Drizzle `users` schema with roles, account status, preferred language, unique phone, password hash and timestamps.
+- TASK-102: secure password hashing and verification using Node.js `scrypt`, random salt and timing-safe comparison.
+- TASK-103: Moroccan phone normalization to E.164 `+212...` format.
+
+Validation on the PHASE 1 branch:
+- `npm run typecheck` — PASS
+- `npm run lint` — PASS
+- `npm run build` — PASS
+- Vercel — PASS
+
+No login endpoint, session handling, role middleware or public signup has been added yet.
+
 ## 2026-08-19 — PHASE 0 validated
 
 PHASE 0 technical validation is complete on the review branch.
