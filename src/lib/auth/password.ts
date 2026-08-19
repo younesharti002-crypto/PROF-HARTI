@@ -2,10 +2,8 @@ import {
   randomBytes,
   scrypt as scryptCallback,
   timingSafeEqual,
+  type ScryptOptions,
 } from "node:crypto";
-import { promisify } from "node:util";
-
-const scrypt = promisify(scryptCallback);
 
 const SCRYPT_N = 16_384;
 const SCRYPT_R = 8;
@@ -23,6 +21,24 @@ type ParsedPasswordHash = {
   salt: Buffer;
   hash: Buffer;
 };
+
+function deriveKey(
+  password: string,
+  salt: Buffer,
+  keyLength: number,
+  options: ScryptOptions,
+): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    scryptCallback(password, salt, keyLength, options, (error, derivedKey) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve(derivedKey);
+    });
+  });
+}
 
 function assertPasswordIsHashable(password: string): void {
   const size = Buffer.byteLength(password, "utf8");
@@ -77,11 +93,11 @@ export async function hashPassword(password: string): Promise<string> {
   assertPasswordIsHashable(password);
 
   const salt = randomBytes(SALT_LENGTH);
-  const derivedKey = (await scrypt(password, salt, KEY_LENGTH, {
+  const derivedKey = await deriveKey(password, salt, KEY_LENGTH, {
     N: SCRYPT_N,
     r: SCRYPT_R,
     p: SCRYPT_P,
-  })) as Buffer;
+  });
 
   return [
     PREFIX,
@@ -109,11 +125,16 @@ export async function verifyPassword(
   }
 
   try {
-    const derivedKey = (await scrypt(password, parsed.salt, parsed.hash.length, {
-      N: parsed.n,
-      r: parsed.r,
-      p: parsed.p,
-    })) as Buffer;
+    const derivedKey = await deriveKey(
+      password,
+      parsed.salt,
+      parsed.hash.length,
+      {
+        N: parsed.n,
+        r: parsed.r,
+        p: parsed.p,
+      },
+    );
 
     if (derivedKey.length !== parsed.hash.length) {
       return false;
