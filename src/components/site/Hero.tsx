@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { ElectronOrbit } from "@/components/ElectronOrbit";
-import { INSTAGRAM_URL, PORTRAIT_SRC } from "@/components/ui/Section";
+import { PORTRAIT_SRC } from "@/components/ui/Section";
 
 export function Hero({ dict }: { dict: Dictionary }) {
   return (
@@ -28,9 +28,7 @@ export function Hero({ dict }: { dict: Dictionary }) {
 
           <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-base font-semibold">
             <span className="text-accent">{dict.hero.name}</span>
-            <span className="text-white/25" aria-hidden="true">
-              /
-            </span>
+            <span className="text-white/25" aria-hidden="true">/</span>
             <span className="text-violet">{dict.hero.imageCaption}</span>
           </p>
 
@@ -40,15 +38,13 @@ export function Hero({ dict }: { dict: Dictionary }) {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <a
-              href="#cours"
+              href="#subscriber-access"
               className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-board-900 shadow-[0_12px_30px_rgba(242,121,43,0.28)] transition-opacity hover:opacity-90"
             >
               {dict.hero.primaryCta}
             </a>
             <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noreferrer noopener"
+              href="#cours"
               className="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-chalk transition-colors hover:border-accent hover:text-accent"
             >
               {dict.hero.secondaryCta}
@@ -62,7 +58,7 @@ export function Hero({ dict }: { dict: Dictionary }) {
                 className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
               >
                 <dt className="text-xs leading-snug text-chalk-dim">{stat.label}</dt>
-                <dd className="mt-1 text-xl font-bold text-chalk">{stat.value}</dd>
+                <dd className="mt-1 text-lg font-bold text-chalk">{stat.value}</dd>
               </div>
             ))}
           </dl>

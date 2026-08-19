@@ -6,7 +6,7 @@ export const INSTAGRAM_URL = "https://instagram.com/prof_harti";
  * Portrait of Prof Harti used in the Hero and About sections.
  * Replace this single file to swap the official photo — no code changes needed.
  */
-export const PORTRAIT_SRC = "/images/prof-harti-portrait.png";
+export const PORTRAIT_SRC = "/images/prof-harti-portrait.jpeg";
 
 export function Section({
   id,

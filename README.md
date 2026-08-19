@@ -1,12 +1,37 @@
-# PROF HARTI Academy — SpecKit
+# PROF HARTI Academy
 
-This repository is the implementation specification package for **PROF HARTI Academy**.
+**PROF HARTI Academy** is a bilingual, subscriber-only educational platform for Prof Harti, focused on Physics, Chemistry and the BAC 2027 learning journey.
 
-## Purpose
+## Product model
 
-The goal is to let any implementation AI (Codex, Claude Code, Gemini, Cursor, etc.) continue the project without depending on previous chat history.
+The public landing page introduces Prof Harti, the educational offer and social channels. The private learning area is reserved for students whose subscription has been confirmed by the administration.
 
-## Read order
+Student access flow:
+
+`Subscribe to offer → Admin confirmation → Account activation → WhatsApp + password login → Subscriber content`
+
+There is **no public student self-signup in V1**.
+
+## Current implementation
+
+PHASE 0 provides the frontend/bootstrap foundation only:
+
+- Next.js + React + TypeScript
+- Tailwind CSS
+- PostgreSQL connection placeholder
+- Drizzle ORM / migration tooling
+- Arabic + French
+- RTL / LTR
+- Cairo for Arabic
+- Poppins for French/Latin
+- Mobile-first Lab Chalkboard landing page
+- Prof Harti portrait in Hero/About
+- Instagram-inspired `@prof_harti` section
+- Subscriber-only landing-page messaging
+
+PHASE 0 intentionally does **not** implement authentication, users, subscriptions backend, courses backend, lives backend or quizzes.
+
+## SpecKit read order
 
 1. `docs/SPEC.md`
 2. `docs/ARCHITECTURE.md`
@@ -17,33 +42,26 @@ The goal is to let any implementation AI (Codex, Claude Code, Gemini, Cursor, et
 7. `docs/CHANGELOG.md`
 8. `docs/MASTER-PROMPT.md`
 
-## Product
-
-Educational platform for **Prof Harti / Ayoub Harti** focused on Physics, Chemistry, BAC 2027, lessons, lives, replays, exercises, quizzes, exams, results, student progress, and parent monitoring.
-
-## Users
+## Roles planned for V1
 
 - STUDENT
 - PARENT
 - TEACHER
 - ADMIN
 
-## Primary login
-
-WhatsApp phone number + password.
-
 ## V1 constraints
 
+- Subscriber-only private educational content
+- No open student self-signup
+- Subscription states: `PENDING / ACTIVE / EXPIRED / SUSPENDED`
+- WhatsApp phone number + password login (PHASE 1)
 - Mobile-first
-- Arabic + French
-- Low-cost / free-first
-- PWA first
+- PWA-first roadmap
 - PostgreSQL central database
-- Local-first persistence using IndexedDB on web
-- Local storage abstraction so SQLite/Realm adapters can be added later
-- External video/live providers in V1
+- IndexedDB local persistence planned for later offline phases
+- External video/live providers
 - No paid OTP requirement in V1
 
-## First implementation command
+## Development rule
 
-Read `docs/MASTER-PROMPT.md`, inspect the repository, then implement the first incomplete task from `docs/TASKS.md`.
+Read the SpecKit before editing. Work phase-by-phase, run real validation, and never claim a task is complete unless the relevant checks actually pass.

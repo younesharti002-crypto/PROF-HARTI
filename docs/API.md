@@ -4,234 +4,83 @@
 
 `/api/v1`
 
-All protected routes require authenticated session.
+Protected routes require an authenticated session and server-side authorization.
 
 ## 2. Response Convention
 
-Success example:
+Success: `{ "data": {}, "meta": {} }`.
 
-```json
-{
-  "data": {},
-  "meta": {}
-}
-```
+Error responses must use safe codes/messages and never expose stack traces.
 
-Error example:
-
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid input"
-  }
-}
-```
-
-Do not expose stack traces.
-
-## 3. Auth
+## 3. Auth (PHASE 1)
 
 ### POST `/api/v1/auth/login`
+Input: phone + password.
 
-Input:
-```json
-{
-  "phone": "0612345678",
-  "password": "secret"
-}
-```
+Server normalizes the phone, verifies user/account/password, establishes a session and returns a safe user profile plus safe subscription/access summary for students.
 
-Behavior:
-- normalize phone
-- validate user
-- reject disabled account
-- verify password
-- establish session
-- return safe user profile
+There is **no public student signup endpoint in V1**. Authentication alone does not grant subscriber-content access.
 
-### POST `/api/v1/auth/logout`
+Other planned endpoints:
+- POST `/api/v1/auth/logout`
+- GET `/api/v1/auth/me`
+- POST `/api/v1/auth/change-password`
+- POST `/api/v1/admin/users/:id/reset-password`
 
-Invalidates current session.
-
-### GET `/api/v1/auth/me`
-
-Returns current safe user identity.
-
-### POST `/api/v1/auth/change-password`
-
-Requires current password unless admin reset flow.
-
-### POST `/api/v1/admin/users/:id/reset-password`
-
-Admin only.
-
-## 4. Student Dashboard
-
-### GET `/api/v1/student/dashboard`
-
-Returns:
-- upcoming live
-- continue learning
-- pending work
-- latest results
-- recent replays
-- subject progress
-
-## 5. Courses
-
-### GET `/api/v1/courses`
-
-Returns courses authorized for current user.
-
-### GET `/api/v1/courses/:id`
-
-Returns course details if authorized.
-
-Admin:
-- POST `/api/v1/admin/courses`
-- PATCH `/api/v1/admin/courses/:id`
-- POST `/api/v1/admin/courses/:id/archive`
-
-## 6. Chapters
-
-Admin:
-- POST `/api/v1/admin/chapters`
-- PATCH `/api/v1/admin/chapters/:id`
-- POST `/api/v1/admin/chapters/:id/archive`
-
-## 7. Lessons
-
-### GET `/api/v1/lessons/:id`
-
-Must enforce publication and access scope.
-
-### POST `/api/v1/lessons/:id/progress`
-
-Input:
-```json
-{
-  "progressPercentage": 75
-}
-```
-
-Admin:
-- POST `/api/v1/admin/lessons`
-- PATCH `/api/v1/admin/lessons/:id`
-- POST `/api/v1/admin/lessons/:id/publish`
-- POST `/api/v1/admin/lessons/:id/archive`
-
-## 8. Live Sessions
-
-### GET `/api/v1/live`
-
-Returns current user's assigned lives.
-
-### GET `/api/v1/live/:id`
-
-Returns authorized live details.
-
-Admin:
-- POST `/api/v1/admin/live`
-- PATCH `/api/v1/admin/live/:id`
-- POST `/api/v1/admin/live/:id/cancel`
-- POST `/api/v1/admin/live/:id/replay`
-
-## 9. Replays
-
-### GET `/api/v1/replays`
-
-Returns authorized replay library.
-
-## 10. Exercises
-
-### GET `/api/v1/exercises`
-
-Supports filters:
-- subject
-- lesson
-- difficulty
-
-Admin:
-- POST `/api/v1/admin/exercises`
-- PATCH `/api/v1/admin/exercises/:id`
-
-## 11. Quizzes
-
-### GET `/api/v1/quizzes/:id`
-
-Must not expose correct answers before submission.
-
-### POST `/api/v1/quizzes/:id/start`
-
-Creates attempt.
-
-### POST `/api/v1/quizzes/:id/submit`
-
-Input:
-- attempt id
-- answers
-
-Server:
-- validates attempt
-- scores
-- stores result
-- returns safe result/correction according to configuration
-
-Admin:
-- POST `/api/v1/admin/quizzes`
-- PATCH `/api/v1/admin/quizzes/:id`
-
-## 12. Results
+## 4. Offers & Subscriptions (PHASE 1)
 
 Student:
+- GET `/api/v1/student/subscription`
+
+Possible status: `PENDING | ACTIVE | EXPIRED | SUSPENDED`.
+
+Admin offers:
+- GET `/api/v1/admin/offers`
+- POST `/api/v1/admin/offers`
+- PATCH `/api/v1/admin/offers/:id`
+
+Admin subscriptions:
+- GET `/api/v1/admin/students/:id/subscriptions`
+- POST `/api/v1/admin/students/:id/subscriptions`
+- PATCH `/api/v1/admin/subscriptions/:id`
+
+Admin must be able to activate, suspend, expire and renew access.
+
+Subscriber educational endpoints must reject access when the relevant subscription is not `ACTIVE`.
+
+## 5. Educational APIs (later phases)
+
+Planned student endpoints include:
+- GET `/api/v1/student/dashboard`
+- GET `/api/v1/courses`
+- GET `/api/v1/courses/:id`
+- GET `/api/v1/lessons/:id`
+- POST `/api/v1/lessons/:id/progress`
+- GET `/api/v1/live`
+- GET `/api/v1/live/:id`
+- GET `/api/v1/replays`
+- GET `/api/v1/exercises`
+- GET `/api/v1/quizzes/:id`
+- POST `/api/v1/quizzes/:id/start`
+- POST `/api/v1/quizzes/:id/submit`
 - GET `/api/v1/results`
-
-Parent:
-- GET `/api/v1/parent/students/:id/results`
-
-Admin:
-- GET `/api/v1/admin/students/:id/results`
-
-## 13. Progress
-
-Student:
 - GET `/api/v1/progress`
+- GET `/api/v1/notifications`
+- POST `/api/v1/notifications/:id/read`
 
-Parent:
-- GET `/api/v1/parent/students/:id/progress`
+Correct quiz answers must not be exposed before submission; scoring is server-side.
 
-Admin:
-- GET `/api/v1/admin/students/:id/progress`
+Admin CRUD endpoints will manage courses, chapters, lessons, lives, replays, exercises, quizzes, notifications and users.
 
-## 14. Notifications
+Parent endpoints will expose only linked-student results/progress.
 
-### GET `/api/v1/notifications`
+## 6. Authorization Rule
 
-### POST `/api/v1/notifications/:id/read`
-
-Admin:
-- POST `/api/v1/admin/notifications`
-
-## 15. Admin Users
-
-- GET `/api/v1/admin/students`
-- POST `/api/v1/admin/students`
-- GET `/api/v1/admin/students/:id`
-- PATCH `/api/v1/admin/students/:id`
-- POST `/api/v1/admin/students/:id/disable`
-- POST `/api/v1/admin/students/:id/activate`
-
-Equivalent management may exist for:
-- parents
-- teachers
-
-## 16. Authorization Rule
-
-Every API handler must explicitly check:
+Every protected handler must check:
 1. authenticated
 2. active account
 3. permitted role
-4. resource scope
+4. active subscription/offer entitlement for subscriber educational content
+5. resource scope (level/group/relationship/publication)
 
 Frontend route guards do not replace backend checks.

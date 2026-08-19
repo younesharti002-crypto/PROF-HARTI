@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { locales, localeLabel, type Locale } from "@/i18n/config";
-import { INSTAGRAM_URL } from "@/components/ui/Section";
 
 export function Header({ dict, locale }: { dict: Dictionary; locale: Locale }) {
   const navItems = [
@@ -60,9 +59,7 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: Locale }) {
           </div>
 
           <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noreferrer noopener"
+            href="#subscriber-access"
             className="hidden rounded-full bg-accent px-4 py-2 text-xs font-semibold text-board-900 transition-opacity hover:opacity-90 sm:inline-block"
           >
             {dict.nav.cta}
@@ -76,6 +73,9 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: Locale }) {
             {item.label}
           </a>
         ))}
+        <a href="#subscriber-access" className="whitespace-nowrap font-semibold text-accent">
+          {dict.nav.cta}
+        </a>
       </nav>
     </header>
   );
