@@ -36,8 +36,8 @@ Definition of done: app starts, landing works, AR/FR + RTL/LTR work, no business
 - [x] TASK-101 Create users schema
 - [x] TASK-102 Add password hashing
 - [x] TASK-103 Add Moroccan phone normalization
-- [ ] TASK-104 Add login endpoint
-- [ ] TASK-105 Add session handling
+- [x] TASK-104 Add login endpoint
+- [x] TASK-105 Add session handling
 - [ ] TASK-106 Add role middleware
 - [ ] TASK-107 Build login UI
 - [ ] TASK-108 Add logout
