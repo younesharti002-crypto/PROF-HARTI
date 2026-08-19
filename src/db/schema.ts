@@ -1,4 +1,5 @@
 import {
+  index,
   pgEnum,
   pgTable,
   text,
@@ -37,5 +38,29 @@ export const users = pgTable("users", {
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
 });
 
+export const authSessions = pgTable(
+  "auth_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: varchar("token_hash", { length: 64 }).notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("auth_sessions_user_id_idx").on(table.userId),
+    index("auth_sessions_expires_at_idx").on(table.expiresAt),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type AuthSession = typeof authSessions.$inferSelect;
+export type NewAuthSession = typeof authSessions.$inferInsert;
