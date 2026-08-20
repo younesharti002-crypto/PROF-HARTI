@@ -3,9 +3,6 @@
 You are the implementation AI for **PROF HARTI Academy**.
 
 ## Mandatory read order
-
-Read:
-
 1. `README.md`
 2. `docs/SPEC.md`
 3. `docs/ARCHITECTURE.md`
@@ -18,119 +15,40 @@ Read:
 Treat `docs/SPEC.md` as the product source of truth.
 
 ## Core rules
-
-1. Inspect the actual repository before making assumptions.
-2. Work on the first incomplete task in `docs/TASKS.md`.
+1. Inspect the actual repository before assumptions.
+2. Work on the first authorized incomplete task in `docs/TASKS.md`.
 3. Do not implement several phases at once.
-4. Keep the app runnable after each task/milestone.
+4. Keep the app runnable.
 5. Use TypeScript.
 6. Do not expose secrets.
-7. Do not weaken backend authorization.
+7. Do not weaken server authorization.
 8. Do not expose quiz answers before submission.
 9. Preserve Arabic RTL and French LTR.
 10. Mobile-first UX is mandatory.
-11. Do not implement V2/non-goal features unless explicitly requested.
+11. Do not implement V2/non-goal features unless requested.
 12. Never claim checks passed unless actually executed.
+13. V1 has no public student self-signup; students are provisioned/activated after subscription confirmation.
+14. Paid educational content requires a server-verified `ACTIVE` subscription entitlement; login alone is not sufficient.
 
 ## Before editing
-
-Report:
-
-```text
-CURRENT STATE:
-CURRENT PHASE:
-NEXT TASK:
-FILES EXPECTED TO CHANGE:
-DATABASE MIGRATION REQUIRED: YES/NO
-RISKS:
-```
+Report CURRENT STATE, CURRENT PHASE, NEXT TASK, FILES EXPECTED TO CHANGE, whether a database migration is required, and risks.
 
 ## After editing
+Run relevant typecheck, lint, tests and build. Report implemented work, files changed, migrations, tests/checks, known issues and next task. Update `docs/TASKS.md` and `docs/CHANGELOG.md` without marking failed/unverified tasks complete.
 
-Run available validation:
-
-```text
-typecheck
-lint
-tests
-build
-```
-
-Then report:
-
-```text
-IMPLEMENTED:
-FILES CHANGED:
-MIGRATIONS:
-TESTS RUN:
-TYPECHECK:
-LINT:
-BUILD:
-KNOWN ISSUES:
-NEXT TASK:
-```
-
-Update:
-- `docs/TASKS.md`
-- `docs/CHANGELOG.md`
-
-Do not mark a task complete if validation failed.
-
-## Database rules
-
-Every schema change requires:
-1. schema update
-2. migration
-3. validation/test
-4. documentation update
-
-Do not make untracked manual production schema changes.
+## Database rule
+Every schema change requires schema update, migration, validation/test and documentation update. No untracked production schema changes.
 
 ## Bug-fix protocol
+Reproduce → identify root cause → regression test where appropriate → minimal fix → checks → regression confirmation.
 
-1. Reproduce
-2. Identify root cause
-3. Add regression test when appropriate
-4. Apply minimal fix
-5. Run relevant checks
-6. Confirm no regression
+## Security authority
+Server enforces authentication, active account, role, resource scope, parent/student relationship, group access, subscription/offer entitlement and quiz scoring. Frontend hiding is not security.
 
-Do not rewrite unrelated code.
+## Current execution gate
 
-## Security rules
+PHASE 0 is the bootstrap/design foundation. If PHASE 0 is marked complete, verify its checks and **stop until explicit approval is given to start PHASE 1**.
 
-Server must enforce:
-- authentication
-- active account
-- role
-- resource scope
-- parent/student relationship
-- group access
-- quiz scoring
+Do not create public student signup. PHASE 1 will add authentication and subscriber entitlement only after approval.
 
-Frontend hiding is not security.
-
-## First command
-
-Implement **PHASE 0 only**.
-
-Initialize the PROF HARTI Academy project according to the specification.
-
-Do not implement authentication or business features yet.
-
-Create:
-- Next.js + TypeScript base
-- Tailwind/UI foundation
-- environment template
-- PostgreSQL configuration placeholder
-- migration tooling
-- docs structure
-- Arabic/French internationalization skeleton
-- working mobile-first landing page
-
-Run:
-- typecheck
-- lint
-- production build
-
-Update TASKS and CHANGELOG after successful validation.
+When work is authorized, implement the first incomplete task in `docs/TASKS.md`, run relevant checks, then update TASKS and CHANGELOG.

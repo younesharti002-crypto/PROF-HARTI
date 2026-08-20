@@ -2,139 +2,56 @@
 
 ## 1. Core Principle
 
-Never trust the frontend.
+Never trust the frontend. Sensitive checks happen server-side.
 
-All sensitive checks happen server-side.
+## 2. Passwords & Sessions
 
-## 2. Passwords
+Passwords are never plaintext or logged; use strong hashing and safe comparison. Sessions must resist client tampering, expire and be invalidated on logout. Prefer secure cookie/session patterns over browser-readable secrets.
 
-Requirements:
-- never plaintext
-- never logged
-- strong password hashing
-- safe comparison
-- admin reset without revealing previous password
+## 3. Authorization
 
-## 3. Sessions
-
-Session should:
-- be protected from client tampering
-- expire
-- be invalidated on logout
-- avoid storing sensitive data in browser-readable storage when a safer session mechanism is available
-
-## 4. Authorization
-
-Must verify:
-- role
-- account status
-- group membership
-- content access
-- parent/student relationship
+Server must verify role, account status, subscription entitlement, academic/group scope, publication state and parent/student relationship.
 
 Examples:
-- Parent A cannot read Student B unless linked.
-- Student cannot access admin endpoints.
+- Parent cannot read an unrelated student.
+- Student cannot call admin endpoints.
 - Draft lessons are invisible to students.
-- Group-restricted live session only appears to authorized group.
+- Group-restricted lives are visible only to authorized groups.
+- `PENDING`, `EXPIRED` and `SUSPENDED` subscriptions must not receive paid lessons, lives, replays, quizzes or protected resources.
+- There is no public student self-signup in V1.
+
+## 4. Subscription Entitlement Security
+
+Never use a frontend-only flag for access. Every protected educational resource must validate an `ACTIVE` subscription for the appropriate offer and valid dates when configured.
+
+A valid login session is not proof of entitlement. Subscription status changes are admin-only and should create an audit log.
 
 ## 5. Quiz Security
 
-Correct answers:
-- must remain server-side until allowed
-- must not be embedded in initial quiz payload
-- scoring must happen server-side
+Correct answers remain server-side until allowed. Do not embed them in the initial student payload. Scoring is server-side.
 
 ## 6. Input Validation
 
-Server validates:
-- phone
-- password
-- UUIDs
-- URLs
-- dates
-- scores
-- question payloads
-- group/role relationships
-- content state transitions
+Validate phone, password, IDs, URLs, dates, scores, quiz payloads, role/group relationships and content state transitions on the server.
 
-## 7. Phone Privacy
+## 7. Privacy & Secrets
 
-Normalize phone number for login.
+Normalize phone numbers for login but do not expose phone lists to unauthorized users.
 
-Do not expose phone lists to unauthorized users.
+Never commit database URLs, auth secrets, storage keys or API keys. Keep only safe environment templates in git.
 
-## 8. Secrets
+Logs must not contain passwords, session tokens, secret keys or sensitive payloads.
 
-Never commit:
-- database URL
-- auth secret
-- storage keys
-- API keys
+## 8. Audit Log
 
-Use environment variables.
+Track critical admin actions such as student creation/disablement, password reset, role changes, lesson publication, result edits, subscription activation/suspension/expiration/renewal.
 
-Repository must contain `.env.example` only.
+## 9. Web Security
 
-## 9. Logging
+Validate external resource URLs. Do not allow dangerous javascript/data URLs for user-managed resources. Use parameterized database access, escaped output, safe CSRF/session patterns and sanitize rich HTML if supported.
 
-Logs may include:
-- request id
-- user id
-- action
-- error category
+Plan rate limiting for login, password reset and quiz submission.
 
-Logs must not include:
-- plaintext passwords
-- session tokens
-- secret keys
-- full sensitive payloads
+## 10. Production Checklist
 
-## 10. Audit Log
-
-Track critical admin actions:
-- create student
-- disable account
-- password reset
-- lesson publication
-- result manual edit
-- role changes
-
-## 11. URL Validation
-
-External video/live/resource URLs should be validated.
-
-Do not allow dangerous javascript/data URLs.
-
-## 12. Rate Limiting
-
-At minimum plan protection for:
-- login attempts
-- password reset
-- quiz submission
-
-Implementation may use provider/platform capabilities in V1.
-
-## 13. CSRF / XSS / Injection
-
-Use framework-safe patterns.
-
-Requirements:
-- parameterized database access
-- escaped output
-- avoid rendering unsafe HTML
-- sanitize rich content if raw HTML is supported
-- use secure CSRF/session patterns appropriate to chosen auth method
-
-## 14. Production Safety Checklist
-
-Before production:
-- production secrets configured outside git
-- debug mode off
-- secure cookies where applicable
-- HTTPS
-- migrations applied
-- admin seed password changed
-- no demo credentials public
-- authorization tests pass
-- build passes
+Before production: secrets outside git, debug off, HTTPS, secure cookies where applicable, migrations applied, seed/admin credentials changed, authorization tests pass and production build passes.

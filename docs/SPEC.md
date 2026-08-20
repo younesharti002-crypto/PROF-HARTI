@@ -2,132 +2,104 @@
 
 ## 1. Product Vision
 
-Build a bilingual educational platform for **Prof Harti — Ayoub Harti** that helps Moroccan students study Physics and Chemistry through structured lessons, live sessions, replays, exercises, quizzes, exams, results, and progress tracking.
+Build a bilingual **subscriber-only** educational platform for **Prof Harti — Ayoub Harti**. It is dedicated to students subscribed to an official Prof Harti offer and gives structured access to Physics and Chemistry lessons, lives, replays, exercises, quizzes, exams, results and progress tracking.
 
-The main student journey is:
+Student journey:
 
-`Login → Dashboard → Courses → Lesson → Live → Replay → Exercise/Quiz → Result → Progress`
+`Subscribe to offer → Admin confirms subscription → Account/access activated → Login → Dashboard → Courses → Lesson → Live → Replay → Exercise/Quiz → Result → Progress`
 
-The main admin journey is:
+Admin journey:
 
-`Admin Login → Students → Groups → Courses → Lessons → Lives → Quizzes → Results`
+`Admin Login → Students → Subscriptions → Groups → Courses → Lessons → Lives → Quizzes → Results`
 
-## 2. Target Audience
+## 2. Target Audience & Roles
 
-### Students
-Primarily BAC students, starting with BAC 2027 cohorts.
-
-### Parents
-Parents or guardians who need visibility into student performance and progress.
-
-### Teachers
-Prof Harti and future authorized teachers.
-
-### Admin
-Users who manage the platform, accounts, groups, and educational content.
-
-## 3. Roles
-
+Roles:
 - `STUDENT`
 - `PARENT`
 - `TEACHER`
 - `ADMIN`
 
+Primary launch audience: BAC students, starting with BAC 2027 cohorts, whose subscription to a Prof Harti offer has been confirmed.
+
 Authorization must be enforced server-side.
 
-## 4. Authentication
+## 3. Authentication
 
 Primary V1 login:
-
 - WhatsApp phone number
 - Password
 
-Moroccan phone numbers must be normalized internally to E.164 format where possible.
+Moroccan phone numbers should be normalized to E.164 where possible, for example `0612345678` → `+212612345678`.
 
-Examples accepted:
-- `0612345678`
-- `212612345678`
-- `+212612345678`
+V1 includes login, logout, persistent session, password change, admin password reset, disabled-account handling and role-based redirect.
 
-Canonical form:
-- `+212612345678`
+V1 excludes SMS OTP, WhatsApp OTP, social login and **public student self-signup**.
 
-V1 includes:
-- Login
-- Logout
-- Persistent session
-- Password change
-- Admin password reset
-- Disabled account handling
-- Role-based redirect
+## 4. Subscription & Access Model
 
-V1 excludes:
-- SMS OTP
-- WhatsApp OTP
-- Social login
+V1 is a **closed subscriber platform**. There is no public student self-registration.
+
+Required onboarding:
+1. Student subscribes to a Prof Harti offer.
+2. Administration verifies the subscription.
+3. Admin creates or links the student account.
+4. A subscription record is activated.
+5. Student receives credentials and logs in.
+6. Subscriber educational content is available only while the matching subscription is `ACTIVE`.
+
+Subscription statuses:
+- `PENDING`
+- `ACTIVE`
+- `EXPIRED`
+- `SUSPENDED`
+
+Account status and subscription status are separate. An account can stay active while the subscription is expired, but paid educational content remains locked until renewal.
+
+Initial V1 offer:
+- `عرض التفوق BAC 2027 / Offre Excellence BAC 2027`
+
+Architecture must allow multiple offers later.
 
 ## 5. Languages
 
 Supported:
-- Arabic (`ar`)
-- French (`fr`)
-
-Arabic uses RTL.
-French uses LTR.
+- Arabic (`ar`) — RTL
+- French (`fr`) — LTR
 
 UI strings must come from translation files.
 
 ## 6. Public Website
 
-Routes:
-
-- `/`
-- `/courses`
-- `/live`
-- `/about`
-- `/contact`
-- `/login`
-
-Homepage should include:
+The public site may include:
 - PROF HARTI branding
-- Physics & Chemistry
-- BAC 2027 offer
+- Physics & Chemistry positioning
+- BAC 2027 offer presentation
 - Teacher introduction
 - Platform benefits
 - Instagram `@prof_harti`
-- WhatsApp contact CTA
-- Login CTA
+- Contact/offer CTA
+- `Espace abonnés / دخول المشتركين` CTA
+
+Public pages may market the offer but must never expose private lesson content. A contact/offer request does not automatically create a platform account.
 
 ## 7. Student Area
 
-Base route:
+Base route: `/student`
 
-`/student`
+Subscriber educational pages require an `ACTIVE` subscription matching the relevant offer/access scope.
 
-Required pages:
+Planned pages:
 - Dashboard
-- Courses
-- Course details
-- Lesson viewer
-- Lives
-- Replays
-- Exercises
-- Quizzes
-- Exams
+- Courses / lessons
+- Lives / replays
+- Exercises / quizzes / exams
 - Results
 - Progress
 - Notifications
 - Profile
 
-### Student dashboard
-
-Must show:
-- Upcoming live
-- Continue learning
-- Pending work
-- Latest results
-- Recent replays
-- Overall progress
+Dashboard should show upcoming live, continue learning, pending work, latest results, recent replays and overall progress.
 
 ## 8. Academic Structure
 
@@ -136,67 +108,29 @@ Hierarchy:
 `Academic Year → Level → Stream → Subject → Course → Chapter → Lesson`
 
 Initial examples:
-- Academic Year: `2026/2027`
-- Level: `2BAC`
-- Streams: `PC`, `SM`
-- Subjects: `Physique`, `Chimie`
+- `2026/2027`
+- `2BAC`
+- `PC`, `SM`
+- `Physique`, `Chimie`
 
-## 9. Lessons
+Students may also be assigned to a primary group such as `2BAC PC — Groupe A`.
 
-Each lesson may contain:
-- Title
-- Description
-- Teacher
-- Subject
-- Course
-- Chapter
-- Video
-- PDF
-- Educational content
-- Images
-- Examples
-- Exercises
-- Quiz
-- Homework
-- Correction
-- Position/order
-- Publication status
+## 9. Lessons & Resources
+
+Lessons may contain title, description, teacher, subject/course/chapter, video, PDF, images, examples, exercises, quiz, homework, correction, order and publication status.
 
 Statuses:
 - `DRAFT`
 - `PUBLISHED`
 - `ARCHIVED`
 
-Students must never see `DRAFT` content.
+Students never receive `DRAFT` content.
 
-## 10. Video
+Large video binaries are not hosted by the application server in V1. Store provider metadata and external URLs. Initial provider: YouTube; live providers may include Google Meet and YouTube Live.
 
-V1 must not host large video binaries on the application server.
+## 10. Lives & Replays
 
-Store metadata:
-- provider
-- external URL
-- thumbnail
-- duration
-- title
-
-Initial provider:
-- YouTube (unlisted/private strategy handled externally)
-
-## 11. Live Classes
-
-Each Live Session contains:
-- title
-- description
-- teacher
-- subject
-- level/group target
-- start time
-- end time
-- provider
-- join URL
-- status
-- replay URL
+Live sessions include title, subject, target level/group, start/end time, provider, join URL, status and optional replay URL.
 
 Statuses:
 - `SCHEDULED`
@@ -205,181 +139,59 @@ Statuses:
 - `CANCELLED`
 - `REPLAY_AVAILABLE`
 
-Initial providers:
-- Google Meet
-- YouTube Live
+Students see only lives/replays allowed by subscription and academic scope.
 
-## 12. Replays
+## 11. Exercises, Quizzes & Assessments
 
-After a live ends, authorized teachers/admins can attach a replay.
-
-Students only see replays matching their access scope.
-
-## 13. Exercises
-
-Exercise fields:
-- title
-- statement
-- subject
-- chapter
-- lesson
-- difficulty
-- content
-- image
-- PDF
-- solution
-- correction video
-- publication status
-
-Difficulty:
+Exercise difficulty:
 - `EASY`
 - `MEDIUM`
 - `HARD`
 
-## 14. Quizzes
-
-Supported V1 question types:
+Quiz question types:
 - `SINGLE_CHOICE`
 - `MULTIPLE_CHOICE`
 - `TRUE_FALSE`
 - `NUMERIC`
 
-Quiz configuration:
-- title
-- lesson
-- time limit
-- max attempts
-- passing score
-- correction visibility
-- publication state
+Correct answers must not be sent to student clients before submission. Quiz scoring is server-side.
 
-Correct answers must not be sent to student clients before submission.
+Assessment types may include `QUIZ`, `HOMEWORK`, `TEST`, `EXAM`, `BAC_SIMULATION`.
 
-Quiz scoring must happen server-side.
+## 12. Results & Progress
 
-## 15. Assessments
+Results store student, assessment, score, maximum, percentage, status and submission date.
 
-Types:
-- `QUIZ`
-- `HOMEWORK`
-- `TEST`
-- `EXAM`
-- `BAC_SIMULATION`
+Lesson progress tracks started-at, last-opened-at, percentage `0–100` and optional completed-at.
 
-Results include:
-- student
-- assessment
-- score
-- maximum
-- percentage
-- status
-- submission date
-- correction visibility
+## 13. Parent Area
 
-## 16. Progress Tracking
+Base route: `/parent`
 
-Track at least:
-- student
-- lesson
-- started at
-- last opened at
-- percentage
-- completed at
+Parents may view linked student progress, latest results, upcoming assessments and upcoming lives. They cannot take quizzes, modify results/content or access unrelated students.
 
-Percentage range:
-- `0–100`
+## 14. Admin Area
 
-Derived subject/course progress should use simple deterministic rules in V1.
+Base route: `/admin`
 
-## 17. Parent Area
+Admin manages accounts, subscriptions, students, parents, teachers, academic structure, groups, courses, lessons, lives, replays, exercises, quizzes, exams, results, notifications and settings.
 
-Base route:
-`/parent`
+Admin can activate, expire, suspend and renew subscriptions, including start/end dates.
 
-Required pages:
-- Dashboard
-- Student overview
-- Results
-- Progress
+## 15. Content Access
 
-Parent can:
-- View linked student(s)
-- View progress
-- View latest results
-- View upcoming assessments
-- View upcoming live sessions
+Access priority for private educational content:
+1. authenticated user
+2. active account
+3. role
+4. active subscription/offer entitlement
+5. level/group/content scope
 
-Parent cannot:
-- Take quizzes
-- Modify results
-- Edit content
-- Access unrelated students
+Frontend hiding is not authorization.
 
-## 18. Admin Area
+## 16. Notifications
 
-Base route:
-`/admin`
-
-Required pages:
-- Dashboard
-- Students
-- Parents
-- Teachers
-- Groups
-- Levels
-- Streams
-- Subjects
-- Courses
-- Chapters
-- Lessons
-- Lives
-- Replays
-- Exercises
-- Quizzes
-- Exams
-- Results
-- Notifications
-- Settings
-
-## 19. Student Management
-
-Admin can:
-- Create student
-- Edit student
-- Activate/deactivate account
-- Assign level/stream/group
-- Reset password
-- View progress
-- View results
-
-## 20. Groups
-
-Examples:
-- `2BAC PC — Groupe A`
-- `2BAC PC — Groupe B`
-- `2BAC SM — Groupe A`
-
-V1 uses one primary group per student.
-Architecture may support multiple memberships later.
-
-## 21. Content Access
-
-Content can target:
-- Everyone
-- Level
-- Stream
-- Group
-- Individual student
-
-V1 priority:
-- Level
-- Group
-
-## 22. Notifications
-
-Internal notifications required.
-
-Types:
+Internal V1 notification types may include:
 - `GENERAL`
 - `NEW_LESSON`
 - `LIVE_REMINDER`
@@ -387,65 +199,16 @@ Types:
 - `NEW_EXAM`
 - `RESULT_AVAILABLE`
 
-## 23. PWA / Offline
+## 17. PWA / Offline Roadmap
 
-V1 should support:
-- Installable web app where feasible
-- Basic offline shell
-- Cached previously viewed metadata/content
-- Pending progress queue
-- Sync when connectivity returns
+Web local storage: IndexedDB behind an abstraction. Future native adapter: SQLite; a future Realm adapter must be possible without rewriting business logic.
 
-Video Live requires internet.
+Offline phases may cache metadata/content and queue progress mutations. Live video still requires internet.
 
-## 24. Local-first Storage
+## 18. V1 Non-goals
 
-Web:
-- IndexedDB
+Unless explicitly requested, do not add payment gateway, paid OTP, AI tutor, gamification, rankings, certificates, native iOS/Android, custom video hosting, custom video conferencing, student social network, chat or advanced analytics.
 
-Future native app:
-- SQLite
+## 19. V1 Definition of Done
 
-Use a storage abstraction interface so that a future Realm adapter can be added without rewriting business logic.
-
-## 25. V1 Non-goals
-
-Do not implement unless explicitly requested:
-- WhatsApp OTP
-- SMS
-- Payment gateway
-- Paid subscriptions
-- AI tutor
-- Gamification
-- Rankings
-- Certificates
-- Native iOS/Android apps
-- Custom video hosting
-- Custom video conferencing
-- Student social network
-- Chat system
-- Advanced analytics
-
-## 26. V1 Definition of Done
-
-V1 is complete when:
-- Authentication works
-- Role authorization works
-- Admin manages students
-- Academic structure works
-- Courses/chapters/lessons work
-- Videos/PDFs work
-- Lives/replays work
-- Quizzes work
-- Server-side scoring works
-- Results work
-- Progress works
-- Parent dashboard works
-- Arabic/French work
-- Mobile UI works
-- Migrations work
-- Seed works
-- Critical tests pass
-- Production build succeeds
-- `.env.example` exists
-- No secrets are committed
+V1 is complete when authentication, role authorization, subscription entitlement, academic/content management, lives/replays, quizzes/scoring, results/progress, parent monitoring, Arabic/French, mobile UI, migrations, seed, critical tests and production build all work; no public student self-signup exists and no secrets are committed.
