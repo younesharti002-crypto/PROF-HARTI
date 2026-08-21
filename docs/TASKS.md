@@ -56,17 +56,19 @@ Gate: critical auth and subscription-entitlement tests pass. No public student s
 
 # PHASE 2 — Academic Structure
 
-- [ ] TASK-201 AcademicYear model
-- [ ] TASK-202 Level model
-- [ ] TASK-203 Stream model
-- [ ] TASK-204 Group model
-- [ ] TASK-205 Subject model
-- [ ] TASK-206 Student profile
-- [ ] TASK-207 Parent profile
-- [ ] TASK-208 Teacher profile
+- [x] TASK-201 AcademicYear model
+- [x] TASK-202 Level model
+- [x] TASK-203 Stream model
+- [x] TASK-204 Group model
+- [x] TASK-205 Subject model
+- [x] TASK-206 Student profile
+- [x] TASK-207 Parent profile
+- [x] TASK-208 Teacher profile
 - [ ] TASK-209 Group assignment
 - [ ] TASK-210 Admin CRUD UI
 - [ ] TASK-211 Seed 2BAC / PC / SM / Physique / Chimie
+
+Phase 2 academic-model migration was validated on a temporary Neon branch, applied to production, and re-verified for the academic tables, profile tables, key indexes, and the offer-to-academic-year relationship.
 
 # PHASE 3 — Courses & Lessons
 
