@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, isNull, or } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { chapters, courses, lessons } from "@/db/content-schema";
+import { chapters, courses, lessonProgress, lessons } from "@/db/content-schema";
 import { studentProfiles, subjects } from "@/db/schema";
 import { authorizeRequest } from "@/lib/auth/authorization";
 import {
@@ -102,6 +102,19 @@ export async function GET(request: NextRequest) {
         .orderBy(asc(lessons.position), asc(lessons.title))
     : [];
 
+  const lessonIds = lessonRows.map((lesson) => lesson.id);
+  const progressRows = lessonIds.length
+    ? await db
+        .select({ lessonId: lessonProgress.lessonId, status: lessonProgress.status })
+        .from(lessonProgress)
+        .where(and(eq(lessonProgress.studentId, userId), inArray(lessonProgress.lessonId, lessonIds)))
+    : [];
+
+  const completedLessons = progressRows.filter((row) => row.status === "COMPLETED").length;
+  const startedLessons = progressRows.length;
+  const totalLessons = lessonRows.length;
+  const percent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
   return NextResponse.json(
     {
       data: {
@@ -109,6 +122,13 @@ export async function GET(request: NextRequest) {
         courses: courseRows,
         chapters: chapterRows,
         lessons: lessonRows,
+        progress: progressRows,
+        progressSummary: {
+          totalLessons,
+          startedLessons,
+          completedLessons,
+          percent,
+        },
       },
     },
     { headers: { "Cache-Control": "no-store" } },
