@@ -42,7 +42,7 @@ export default async function LandingPage({ params }: { params: Promise<{ lang: 
         <Offers dict={dict} />
         <WhyChoose dict={dict} />
         <InstagramFeed dict={dict} />
-        <CallToAction dict={dict} />
+        <CallToAction dict={dict} locale={lang} />
       </main>
 
       <Footer dict={dict} locale={lang} />
