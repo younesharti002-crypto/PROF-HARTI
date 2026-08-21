@@ -19,6 +19,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ lang
     const session = await getAuthenticatedSession(token);
     if (!session) redirect(`/${lang}/login`);
 
+    if (session.user.role === "TEACHER") redirect(`/${lang}/studio`);
+    if (session.user.role === "ADMIN") redirect(`/${lang}/admin/academic`);
+    if (session.user.role !== "STUDENT") redirect(`/${lang}/login`);
+
     return <StudentDashboard locale={lang} studentName={session.user.fullName} />;
   } catch {
     redirect(`/${lang}/login`);
