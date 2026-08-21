@@ -4,6 +4,7 @@ import {
   SESSION_COOKIE_NAME,
   type AuthenticatedSession,
 } from "@/lib/auth/session";
+import { isRoleAllowed, type AuthRole } from "@/lib/auth/roles";
 
 export type UserRole = AuthenticatedSession["user"]["role"];
 
@@ -27,7 +28,7 @@ export async function authorizeRequest(
     return { ok: false, reason: "UNAUTHENTICATED" };
   }
 
-  if (allowedRoles && !allowedRoles.includes(session.user.role)) {
+  if (!isRoleAllowed(session.user.role as AuthRole, allowedRoles)) {
     return { ok: false, reason: "FORBIDDEN" };
   }
 
