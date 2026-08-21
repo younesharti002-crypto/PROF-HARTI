@@ -121,9 +121,33 @@ export const lessons = pgTable(
   ],
 );
 
+export const lessonProgress = pgTable(
+  "lesson_progress",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    lessonId: uuid("lesson_id")
+      .notNull()
+      .references(() => lessons.id, { onDelete: "cascade" }),
+    status: varchar("status", { length: 20 }).default("STARTED").notNull(),
+    startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("lesson_progress_student_lesson_unique").on(table.studentId, table.lessonId),
+    index("lesson_progress_student_idx").on(table.studentId),
+    index("lesson_progress_lesson_idx").on(table.lessonId),
+    check("lesson_progress_status_check", sql`${table.status} in ('STARTED', 'COMPLETED')`),
+  ],
+);
+
 export type Course = typeof courses.$inferSelect;
 export type NewCourse = typeof courses.$inferInsert;
 export type Chapter = typeof chapters.$inferSelect;
 export type NewChapter = typeof chapters.$inferInsert;
 export type Lesson = typeof lessons.$inferSelect;
 export type NewLesson = typeof lessons.$inferInsert;
+export type LessonProgress = typeof lessonProgress.$inferSelect;
