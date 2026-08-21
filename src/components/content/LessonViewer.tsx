@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type LessonNav = { id: string; title: string } | null;
+type ProgressStatus = "NONE" | "STARTED" | "COMPLETED";
 
 type LessonViewerProps = {
   lang: "ar" | "fr";
@@ -17,6 +21,7 @@ type LessonViewerProps = {
   };
   previousLesson: LessonNav;
   nextLesson: LessonNav;
+  initialProgressStatus: ProgressStatus;
 };
 
 function getVideoPresentation(url: string | null) {
@@ -60,10 +65,61 @@ export function LessonViewer({
   lesson,
   previousLesson,
   nextLesson,
+  initialProgressStatus,
 }: LessonViewerProps) {
   const ar = lang === "ar";
   const video = getVideoPresentation(lesson.videoUrl);
   const lessonHref = (lessonId: string) => `/${lang}/courses/${courseId}/lessons/${lessonId}`;
+  const [progressStatus, setProgressStatus] = useState<ProgressStatus>(initialProgressStatus);
+  const [savingProgress, setSavingProgress] = useState(false);
+  const [progressError, setProgressError] = useState("");
+
+  useEffect(() => {
+    if (initialProgressStatus !== "NONE") return;
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch("/api/v1/student/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lessonId: lesson.id, status: "STARTED" }),
+        });
+        if (!response.ok || cancelled) return;
+        setProgressStatus("STARTED");
+      } catch {
+        // Progress tracking must never block lesson viewing.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialProgressStatus, lesson.id]);
+
+  async function completeLesson() {
+    if (progressStatus === "COMPLETED" || savingProgress) return;
+
+    setSavingProgress(true);
+    setProgressError("");
+    try {
+      const response = await fetch("/api/v1/student/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lessonId: lesson.id, status: "COMPLETED" }),
+      });
+      const json = await response.json();
+      if (!response.ok) {
+        setProgressError(json.error?.message || (ar ? "تعذر حفظ التقدم." : "Impossible d’enregistrer la progression."));
+        return;
+      }
+      setProgressStatus("COMPLETED");
+    } catch {
+      setProgressError(ar ? "تعذر حفظ التقدم." : "Impossible d’enregistrer la progression.");
+    } finally {
+      setSavingProgress(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-board-900 text-chalk" dir={ar ? "rtl" : "ltr"}>
@@ -73,9 +129,16 @@ export function LessonViewer({
             <span className="text-xs font-black uppercase tracking-[0.2em] text-accent">{subjectName}</span>
             <p className="mt-1 truncate text-sm text-chalk-dim">{courseTitle} · {chapterTitle}</p>
           </div>
-          <Link href={`/${lang}/courses`} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold transition hover:border-accent/60">
-            {ar ? "العودة إلى دروسي" : "Retour à mes cours"}
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className={`rounded-full border px-3 py-1.5 text-xs font-black ${progressStatus === "COMPLETED" ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-300" : "border-accent/25 bg-accent/10 text-accent"}`}>
+              {progressStatus === "COMPLETED"
+                ? ar ? "✓ مكتمل" : "✓ Terminée"
+                : ar ? "◌ قيد الإنجاز" : "◌ En cours"}
+            </span>
+            <Link href={`/${lang}/courses`} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold transition hover:border-accent/60">
+              {ar ? "العودة إلى دروسي" : "Retour à mes cours"}
+            </Link>
+          </div>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -120,7 +183,7 @@ export function LessonViewer({
               <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{lesson.title}</h1>
               {lesson.summary ? <p className="mt-4 max-w-4xl text-sm leading-8 text-chalk-dim sm:text-base">{lesson.summary}</p> : null}
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-wrap items-center gap-3">
                 {lesson.pdfUrl ? (
                   <a href={lesson.pdfUrl} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold transition hover:border-accent/60">
                     {ar ? "فتح ملخص الدرس PDF" : "Ouvrir le PDF du cours"}
@@ -128,7 +191,21 @@ export function LessonViewer({
                 ) : (
                   <span className="rounded-full border border-white/10 px-5 py-2.5 text-sm text-chalk-dim">{ar ? "PDF غير متوفر بعد" : "PDF pas encore disponible"}</span>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => void completeLesson()}
+                  disabled={progressStatus === "COMPLETED" || savingProgress}
+                  className={`rounded-full px-5 py-2.5 text-sm font-black transition ${progressStatus === "COMPLETED" ? "cursor-default border border-emerald-300/25 bg-emerald-400/10 text-emerald-300" : "bg-accent text-board-900 hover:opacity-90 disabled:opacity-60"}`}
+                >
+                  {progressStatus === "COMPLETED"
+                    ? ar ? "✓ تم إكمال الدرس" : "✓ Leçon terminée"
+                    : savingProgress
+                      ? ar ? "جاري الحفظ..." : "Enregistrement..."
+                      : ar ? "تم إكمال الدرس" : "Marquer comme terminée"}
+                </button>
               </div>
+              {progressError ? <p className="mt-3 text-xs text-violet">{progressError}</p> : null}
             </article>
 
             {lesson.pdfUrl ? (
