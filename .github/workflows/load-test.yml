@@ -1,0 +1,60 @@
+name: Load Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "Preview/Staging URL only"
+        required: true
+        type: string
+      users:
+        description: "Concurrent virtual users"
+        required: true
+        default: "100"
+        type: choice
+        options:
+          - "100"
+          - "250"
+          - "500"
+      duration_seconds:
+        description: "Test duration in seconds"
+        required: true
+        default: "30"
+        type: choice
+        options:
+          - "30"
+          - "60"
+          - "120"
+      allow_production:
+        description: "Explicitly allow production target"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TARGET_URL: ${{ inputs.target_url }}
+      USERS: ${{ inputs.users }}
+      DURATION_SECONDS: ${{ inputs.duration_seconds }}
+      ALLOW_PRODUCTION: ${{ inputs.allow_production }}
+      MAX_FAILURE_RATE: "0.01"
+      MAX_P95_MS: "1500"
+      TEST_PHONE: ${{ secrets.LOAD_TEST_STUDENT_PHONE }}
+      TEST_PASSWORD: ${{ secrets.LOAD_TEST_STUDENT_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run staged load test
+        run: node scripts/load-test.mjs
