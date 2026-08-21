@@ -15,6 +15,7 @@ export function About({ dict }: { dict: Dictionary }) {
               src={PORTRAIT_SRC}
               alt={dict.hero.imageAlt}
               fill
+              unoptimized
               sizes="(max-width: 1024px) 85vw, 330px"
               className="object-cover object-top"
             />
