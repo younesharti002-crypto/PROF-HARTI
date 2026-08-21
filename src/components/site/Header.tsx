@@ -58,12 +58,12 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: Locale }) {
             ))}
           </div>
 
-          <a
-            href="#subscriber-access"
+          <Link
+            href={`/${locale}/login`}
             className="hidden rounded-full bg-accent px-4 py-2 text-xs font-semibold text-board-900 transition-opacity hover:opacity-90 sm:inline-block"
           >
             {dict.nav.cta}
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -73,9 +73,9 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: Locale }) {
             {item.label}
           </a>
         ))}
-        <a href="#subscriber-access" className="whitespace-nowrap font-semibold text-accent">
+        <Link href={`/${locale}/login`} className="whitespace-nowrap font-semibold text-accent">
           {dict.nav.cta}
-        </a>
+        </Link>
       </nav>
     </header>
   );
