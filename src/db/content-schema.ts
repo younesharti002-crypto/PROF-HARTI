@@ -144,6 +144,41 @@ export const lessonProgress = pgTable(
   ],
 );
 
+export const liveClasses = pgTable(
+  "live_classes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    title: varchar("title", { length: 180 }).notNull(),
+    description: text("description"),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }).notNull(),
+    durationMinutes: integer("duration_minutes").default(90).notNull(),
+    joinUrl: text("join_url"),
+    replayUrl: text("replay_url"),
+    replayPdfUrl: text("replay_pdf_url"),
+    status: varchar("status", { length: 20 }).default("SCHEDULED").notNull(),
+    createdByUserId: uuid("created_by_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("live_classes_course_scheduled_idx").on(table.courseId, table.scheduledAt),
+    index("live_classes_status_scheduled_idx").on(table.status, table.scheduledAt),
+    check(
+      "live_classes_status_check",
+      sql`${table.status} in ('SCHEDULED', 'LIVE', 'COMPLETED', 'CANCELLED')`,
+    ),
+    check(
+      "live_classes_duration_check",
+      sql`${table.durationMinutes} > 0 and ${table.durationMinutes} <= 300`,
+    ),
+  ],
+);
+
 export type Course = typeof courses.$inferSelect;
 export type NewCourse = typeof courses.$inferInsert;
 export type Chapter = typeof chapters.$inferSelect;
@@ -151,3 +186,5 @@ export type NewChapter = typeof chapters.$inferInsert;
 export type Lesson = typeof lessons.$inferSelect;
 export type NewLesson = typeof lessons.$inferInsert;
 export type LessonProgress = typeof lessonProgress.$inferSelect;
+export type LiveClass = typeof liveClasses.$inferSelect;
+export type NewLiveClass = typeof liveClasses.$inferInsert;
