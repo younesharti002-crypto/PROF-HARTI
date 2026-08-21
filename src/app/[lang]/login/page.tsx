@@ -51,6 +51,7 @@ export default async function LoginPage({
             alt="Prof Harti"
             fill
             priority
+            unoptimized
             sizes="48vw"
             className="object-cover object-top"
           />

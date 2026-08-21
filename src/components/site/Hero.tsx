@@ -18,6 +18,7 @@ export function Hero({ dict }: { dict: Dictionary }) {
               alt={dict.hero.imageAlt}
               fill
               priority
+              unoptimized
               sizes="(max-width: 1024px) 90vw, 45vw"
               className="object-cover object-top"
             />
