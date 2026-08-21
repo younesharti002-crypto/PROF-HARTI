@@ -5,7 +5,7 @@ const featureIcons = ["▣", "◉", "▶", "✎"];
 
 export function Offers({ dict }: { dict: Dictionary }) {
   return (
-    <Section id="cours" className="relative overflow-hidden bg-[#07111c]">
+    <Section id="platform-features" className="relative overflow-hidden bg-[#07111c]">
       <div aria-hidden="true" className="pointer-events-none absolute end-[-10rem] top-20 size-96 rounded-full bg-accent/[0.045] blur-3xl" />
       <div className="relative">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
