@@ -6,24 +6,74 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 type Course = { id: string; title: string; slug: string; description: string | null; subjectName: string };
 type Chapter = { id: string; courseId: string; title: string; position: number };
 type Lesson = { id: string; chapterId: string; title: string; summary: string | null; videoUrl: string | null; pdfUrl: string | null; position: number };
-type Data = { courses: Course[]; chapters: Chapter[]; lessons: Lesson[] };
+type Data = { subscriptionState?: "ACTIVE"; courses: Course[]; chapters: Chapter[]; lessons: Lesson[] };
+
+type LockedState = {
+  badge: string;
+  icon: string;
+  titleAr: string;
+  titleFr: string;
+  bodyAr: string;
+  bodyFr: string;
+};
+
+const LOCKED_STATES: Record<string, LockedState> = {
+  SUBSCRIPTION_PENDING: {
+    badge: "PENDING",
+    icon: "⏳",
+    titleAr: "اشتراكك في انتظار التفعيل",
+    titleFr: "Votre abonnement est en attente",
+    bodyAr: "تم تسجيل الدخول بنجاح. سيتم فتح الدروس تلقائياً مباشرة بعد تفعيل اشتراكك من الإدارة.",
+    bodyFr: "Votre connexion est valide. Les cours seront ouverts automatiquement dès l’activation de votre abonnement par l’administration.",
+  },
+  SUBSCRIPTION_SUSPENDED: {
+    badge: "SUSPENDED",
+    icon: "⏸",
+    titleAr: "تم تعليق الاشتراك مؤقتاً",
+    titleFr: "Abonnement temporairement suspendu",
+    bodyAr: "حسابك مازال موجوداً، لكن الولوج للمحتوى متوقف حالياً. تواصل مع الإدارة لإعادة التفعيل.",
+    bodyFr: "Votre compte reste accessible, mais l’accès aux contenus est suspendu. Contactez l’administration pour le réactiver.",
+  },
+  SUBSCRIPTION_EXPIRED: {
+    badge: "EXPIRED",
+    icon: "⌛",
+    titleAr: "انتهت مدة الاشتراك",
+    titleFr: "Votre abonnement a expiré",
+    bodyAr: "يمكنك الدخول لحسابك، لكن الدروس تحتاج إلى تجديد الاشتراك حتى تصبح متاحة من جديد.",
+    bodyFr: "Vous pouvez toujours accéder à votre compte, mais un renouvellement est nécessaire pour rouvrir les cours.",
+  },
+  SUBSCRIPTION_REQUIRED: {
+    badge: "LOCKED",
+    icon: "🔒",
+    titleAr: "لا يوجد اشتراك مفعل",
+    titleFr: "Aucun abonnement actif",
+    bodyAr: "هذا الحساب غير مرتبط حالياً باشتراك يسمح بالوصول إلى الدروس.",
+    bodyFr: "Ce compte n’est actuellement lié à aucun abonnement donnant accès aux cours.",
+  },
+};
 
 export function StudentCourses({ lang }: { lang: "ar" | "fr" }) {
   const ar = lang === "ar";
   const [data, setData] = useState<Data>({ courses: [], chapters: [], lessons: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [errorCode, setErrorCode] = useState("");
   const [activeCourseId, setActiveCourseId] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError("");
+    setErrorCode("");
+
     const response = await fetch("/api/v1/student/content", { cache: "no-store" });
     const json = await response.json();
     if (!response.ok) {
+      setErrorCode(json.error?.code || "");
       setError(json.error?.message || "Unable to load courses.");
       setLoading(false);
       return;
     }
+
     const next = json.data as Data;
     setData(next);
     setActiveCourseId((current) => current || next.courses[0]?.id || "");
@@ -37,6 +87,7 @@ export function StudentCourses({ lang }: { lang: "ar" | "fr" }) {
     () => data.chapters.filter((chapter) => chapter.courseId === activeCourseId),
     [data.chapters, activeCourseId],
   );
+  const lockedState = LOCKED_STATES[errorCode];
 
   if (loading) {
     return <main className="min-h-screen bg-board-900 px-6 py-12 text-chalk">{ar ? "جاري تحميل دروسك..." : "Chargement de vos cours..."}</main>;
@@ -51,10 +102,36 @@ export function StudentCourses({ lang }: { lang: "ar" | "fr" }) {
             <h1 className="mt-2 text-3xl font-bold">{ar ? "دروسي" : "Mes cours"}</h1>
             <p className="mt-2 text-sm text-chalk-dim">{ar ? "المحتوى المنشور والمخصص لمستواك واشتراكك." : "Les contenus publiés correspondant à votre niveau et votre abonnement."}</p>
           </div>
-          <Link href={`/${lang}/dashboard`} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold hover:border-accent/60">{ar ? "العودة للرئيسية" : "Retour au tableau de bord"}</Link>
+          <div className="flex flex-wrap items-center gap-3">
+            {!error ? (
+              <span className="rounded-full border border-emerald-300/25 bg-emerald-400/10 px-3 py-1.5 text-xs font-black text-emerald-300">
+                {ar ? "● اشتراك مفعل" : "● Abonnement actif"}
+              </span>
+            ) : null}
+            <Link href={`/${lang}/dashboard`} className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold hover:border-accent/60">{ar ? "العودة للرئيسية" : "Retour au tableau de bord"}</Link>
+          </div>
         </header>
 
-        {error ? (
+        {lockedState ? (
+          <section className="mx-auto max-w-3xl rounded-[2rem] border border-violet/30 bg-gradient-to-b from-violet/10 to-white/[0.025] p-7 text-center sm:p-10">
+            <div className="mx-auto grid size-16 place-items-center rounded-3xl border border-white/10 bg-white/5 text-3xl">{lockedState.icon}</div>
+            <span className="mt-5 inline-flex rounded-full border border-violet/30 bg-violet/10 px-3 py-1 text-[11px] font-black tracking-[0.18em] text-violet">
+              {lockedState.badge}
+            </span>
+            <h2 className="mt-4 text-2xl font-bold sm:text-3xl">{ar ? lockedState.titleAr : lockedState.titleFr}</h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-chalk-dim sm:text-base">
+              {ar ? lockedState.bodyAr : lockedState.bodyFr}
+            </p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <Link href={`/${lang}/dashboard`} className="rounded-full bg-accent px-5 py-2.5 text-sm font-black text-board-900">
+                {ar ? "العودة للوحة التلميذ" : "Retour au tableau de bord"}
+              </Link>
+              <button type="button" onClick={() => void load()} className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold hover:border-accent/60">
+                {ar ? "إعادة التحقق" : "Vérifier à nouveau"}
+              </button>
+            </div>
+          </section>
+        ) : error ? (
           <div className="rounded-[2rem] border border-violet/30 bg-violet/10 p-6">
             <h2 className="font-bold">{ar ? "المحتوى غير متاح حالياً" : "Contenu indisponible"}</h2>
             <p className="mt-2 text-sm text-chalk-dim">{error}</p>
