@@ -41,7 +41,7 @@ Definition of done: app starts, landing works, AR/FR + RTL/LTR work, no business
 - [x] TASK-106 Add role middleware
 - [x] TASK-107 Build login UI
 - [x] TASK-108 Add logout
-- [-] TASK-109 Seed admin and Prof Harti teacher — secure env-driven seed ready; real credentials intentionally not committed
+- [x] TASK-109 Seed admin and Prof Harti teacher
 - [x] TASK-110 Add disabled-account handling
 - [x] TASK-111 Add auth tests
 - [x] TASK-112 Add offers schema/model
@@ -50,7 +50,7 @@ Definition of done: app starts, landing works, AR/FR + RTL/LTR work, no business
 - [x] TASK-115 Add admin subscription activation/status management
 - [x] TASK-116 Add subscription access tests (ACTIVE vs PENDING/EXPIRED/SUSPENDED)
 
-Production database migration for `offers`, `student_subscriptions`, and subscription statuses was validated on a temporary Neon branch before being applied and re-verified on the production branch.
+Production database migration for `offers`, `student_subscriptions`, and subscription statuses was validated on a temporary Neon branch before being applied and re-verified on the production branch. Internal ADMIN and TEACHER accounts are present in production; no plaintext credentials are committed to GitHub.
 
 Gate: critical auth and subscription-entitlement tests pass. No public student self-signup.
 
