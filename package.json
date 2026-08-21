@@ -14,6 +14,7 @@
     "test:subscriptions": "node --test tests/subscriptions/*.test.ts",
     "test:academic": "node --test tests/academic/*.test.ts",
     "seed:core-users": "node scripts/seed-core-users.mjs",
+    "seed:academic": "node scripts/seed-academic-core.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:generate": "drizzle-kit generate",
