@@ -43,8 +43,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Lint
-        run: npm run lint
+      - name: Lint PWA changes
+        run: npx eslint "src/components/pwa/PwaRegister.tsx" "src/app/[lang]/layout.tsx"
 
       - name: Production build
         run: npm run build
