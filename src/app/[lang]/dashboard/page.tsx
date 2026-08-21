@@ -72,6 +72,15 @@ export default async function DashboardPage({ params }: { params: Promise<{ lang
           {active ? "● " : "◌ "}{statusLabel}
         </div>
 
+        {active ? (
+          <Link
+            href={`/${lang}/live`}
+            className="fixed bottom-20 end-5 z-50 rounded-full border border-violet/30 bg-board-800 px-5 py-3 text-sm font-black text-chalk shadow-xl shadow-black/25"
+          >
+            {lang === "ar" ? "الحصص والتسجيلات" : "Lives & replays"}
+          </Link>
+        ) : null}
+
         <Link
           href={`/${lang}/courses`}
           className={`fixed bottom-5 end-5 z-50 rounded-full px-5 py-3 text-sm font-black shadow-xl shadow-black/25 ${
