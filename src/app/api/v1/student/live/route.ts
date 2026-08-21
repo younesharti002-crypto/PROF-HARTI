@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { courses, liveClasses } from "@/db/content-schema";
 import { studentProfiles, subjects } from "@/db/schema";
 import { authorizeRequest } from "@/lib/auth/authorization";
+import { sanitizeStudentLiveResources } from "@/lib/live/student-visibility";
 import { getStudentSubscriptionAccess } from "@/lib/subscriptions/student-access";
 
 function errorResponse(status: number, code: string, message: string) {
@@ -74,5 +75,10 @@ export async function GET(request: NextRequest) {
         .orderBy(asc(liveClasses.scheduledAt))
     : [];
 
-  return NextResponse.json({ data: { subscriptionState: access.state, sessions } }, { headers: { "Cache-Control": "no-store" } });
+  const visibleSessions = sessions.map(sanitizeStudentLiveResources);
+
+  return NextResponse.json(
+    { data: { subscriptionState: access.state, sessions: visibleSessions } },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }
