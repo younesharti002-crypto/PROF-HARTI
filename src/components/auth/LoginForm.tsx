@@ -23,6 +23,8 @@ type Copy = {
   passwordLabel: string;
   submit: string;
   submitting: string;
+  logout: string;
+  loggingOut: string;
   adminNote: string;
   successTitle: string;
   successBody: string;
@@ -43,6 +45,8 @@ const copy: Record<Locale, Copy> = {
     passwordLabel: "كلمة المرور",
     submit: "دخول",
     submitting: "جاري التحقق...",
+    logout: "تسجيل الخروج",
+    loggingOut: "جاري تسجيل الخروج...",
     adminNote: "لا يوجد تسجيل ذاتي للطلاب. الحسابات تُنشأ وتُفعّل من طرف الإدارة بعد تأكيد الاشتراك.",
     successTitle: "تم تسجيل الدخول بنجاح",
     successBody: "الجلسة آمنة وفعالة. أصبح الحساب جاهزاً للانتقال إلى فضاء المشترك.",
@@ -61,6 +65,8 @@ const copy: Record<Locale, Copy> = {
     passwordLabel: "Mot de passe",
     submit: "Se connecter",
     submitting: "Vérification...",
+    logout: "Se déconnecter",
+    loggingOut: "Déconnexion...",
     adminNote: "Il n’y a pas d’inscription libre. Les comptes sont créés et activés par l’administration après confirmation de l’abonnement.",
     successTitle: "Connexion réussie",
     successBody: "La session sécurisée est active. Le compte est prêt pour l’espace abonné.",
@@ -88,6 +94,7 @@ export function LoginForm({ locale }: { locale: Locale }) {
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<SafeUser | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -136,6 +143,32 @@ export function LoginForm({ locale }: { locale: Locale }) {
     }
   }
 
+  async function handleLogout() {
+    setError(null);
+    setLoggingOut(true);
+
+    try {
+      const response = await fetch("/api/v1/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+
+      if (!response.ok) {
+        setError(text.unavailable);
+        return;
+      }
+
+      setUser(null);
+      setPhone("");
+      setPassword("");
+    } catch {
+      setError(text.unavailable);
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
   if (user) {
     return (
       <div className="rounded-3xl border border-white/10 bg-board-800/70 p-6 shadow-2xl shadow-black/20 sm:p-8">
@@ -150,12 +183,29 @@ export function LoginForm({ locale }: { locale: Locale }) {
           <p className="mt-1 text-chalk-dim">{user.phone}</p>
           <p className="mt-1 text-xs font-semibold uppercase tracking-[0.15em] text-accent-soft">{user.role}</p>
         </div>
-        <Link
-          href={`/${locale}`}
-          className="mt-6 inline-flex rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-chalk transition-colors hover:bg-white/10"
-        >
-          {text.backHome}
-        </Link>
+
+        {error ? (
+          <div role="alert" className="mt-5 rounded-2xl border border-red-300/20 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+            {error}
+          </div>
+        ) : null}
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href={`/${locale}`}
+            className="inline-flex rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-chalk transition-colors hover:bg-white/10"
+          >
+            {text.backHome}
+          </Link>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-board-900 transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loggingOut ? text.loggingOut : text.logout}
+          </button>
+        </div>
       </div>
     );
   }
