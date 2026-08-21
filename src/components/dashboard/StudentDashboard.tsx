@@ -22,10 +22,16 @@ export function StudentDashboard({
   locale,
   studentName,
   demo = false,
+  progressPercent = 0,
+  progressCompleted = 0,
+  progressTotal = 0,
 }: {
   locale: "ar" | "fr";
   studentName: string;
   demo?: boolean;
+  progressPercent?: number;
+  progressCompleted?: number;
+  progressTotal?: number;
 }) {
   const ar = locale === "ar";
 
@@ -107,7 +113,15 @@ export function StudentDashboard({
               ["02", ar ? "المواد" : "Matières", "Physique + Chimie"],
               ["12", ar ? "التسجيلات" : "Replays", ar ? "جاهزة للمشاهدة" : "disponibles"],
               ["18", ar ? "التمارين" : "Exercices", ar ? "مع التصحيح" : "avec correction"],
-              ["74%", ar ? "التقدم" : "Progression", ar ? "هذا الشهر" : "ce mois"],
+              [
+                demo ? "74%" : `${progressPercent}%`,
+                ar ? "التقدم" : "Progression",
+                demo
+                  ? ar ? "هذا الشهر" : "ce mois"
+                  : ar
+                    ? `${progressCompleted}/${progressTotal} دروس مكتملة`
+                    : `${progressCompleted}/${progressTotal} leçons terminées`,
+              ],
             ].map(([value, label, note]) => (
               <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.035] p-5">
                 <p className="text-2xl font-bold text-accent">{value}</p>
@@ -162,24 +176,43 @@ export function StudentDashboard({
               <span className="text-xs text-chalk-dim">2BAC Sciences Physiques</span>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-2">
-              <CourseCard
-                code="PHY"
-                title={ar ? "الفيزياء" : "Physique"}
-                subtitle="2BAC · Sciences Physiques"
-                progress={78}
-                lessons={physicsLessons}
-                locale={locale}
-              />
-              <CourseCard
-                code="CHI"
-                title={ar ? "الكيمياء" : "Chimie"}
-                subtitle="2BAC · Sciences Physiques"
-                progress={69}
-                lessons={chemistryLessons}
-                locale={locale}
-              />
-            </div>
+            {demo ? (
+              <div className="grid gap-4 xl:grid-cols-2">
+                <CourseCard
+                  code="PHY"
+                  title={ar ? "الفيزياء" : "Physique"}
+                  subtitle="2BAC · Sciences Physiques"
+                  progress={78}
+                  lessons={physicsLessons}
+                  locale={locale}
+                />
+                <CourseCard
+                  code="CHI"
+                  title={ar ? "الكيمياء" : "Chimie"}
+                  subtitle="2BAC · Sciences Physiques"
+                  progress={69}
+                  lessons={chemistryLessons}
+                  locale={locale}
+                />
+              </div>
+            ) : (
+              <Link href={`/${locale}/courses`} className="block rounded-[2rem] border border-white/10 bg-board-800/60 p-6 transition hover:border-accent/40 sm:p-7">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <span className="text-xs font-black uppercase tracking-[0.18em] text-accent">{ar ? "المحتوى الحقيقي" : "Contenu réel"}</span>
+                    <h3 className="mt-2 text-2xl font-bold">{ar ? "دروسي المنشورة" : "Mes cours publiés"}</h3>
+                    <p className="mt-2 text-sm text-chalk-dim">
+                      {ar ? "شاهد الدروس المتاحة وتتبع تقدمك من نفس المسار." : "Consultez vos leçons disponibles et suivez votre progression au même endroit."}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-accent/25 bg-accent/10 px-4 py-2 text-sm font-black text-accent">{progressPercent}%</span>
+                </div>
+                <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full rounded-full bg-accent" style={{ width: `${progressPercent}%` }} />
+                </div>
+                <p className="mt-4 text-sm font-bold text-accent">{ar ? "فتح دروسي ←" : "Ouvrir mes cours →"}</p>
+              </Link>
+            )}
           </section>
 
           <section id="replays" className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-5 sm:p-6">
