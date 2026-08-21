@@ -170,6 +170,16 @@ export function LoginForm({ locale }: { locale: Locale }) {
   }
 
   if (user) {
+    const destination = user.role === "ADMIN" ? `/${locale}/admin/academic` : `/${locale}/dashboard`;
+    const destinationLabel =
+      user.role === "ADMIN"
+        ? locale === "ar"
+          ? "فتح لوحة الإدارة"
+          : "Ouvrir l’administration"
+        : locale === "ar"
+          ? "فتح مساحة التلميذ"
+          : "Ouvrir l’espace élève";
+
     return (
       <div className="rounded-3xl border border-white/10 bg-board-800/70 p-6 shadow-2xl shadow-black/20 sm:p-8">
         <div className="mb-5 grid size-12 place-items-center rounded-2xl bg-emerald-400/10 text-2xl text-emerald-300 ring-1 ring-emerald-300/30">
@@ -192,6 +202,12 @@ export function LoginForm({ locale }: { locale: Locale }) {
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
+            href={destination}
+            className="inline-flex rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-board-900 transition-opacity hover:opacity-90"
+          >
+            {destinationLabel}
+          </Link>
+          <Link
             href={`/${locale}`}
             className="inline-flex rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-chalk transition-colors hover:bg-white/10"
           >
@@ -201,7 +217,7 @@ export function LoginForm({ locale }: { locale: Locale }) {
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-board-900 transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-semibold text-chalk transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loggingOut ? text.loggingOut : text.logout}
           </button>
