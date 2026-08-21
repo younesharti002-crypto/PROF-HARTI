@@ -44,13 +44,15 @@ Definition of done: app starts, landing works, AR/FR + RTL/LTR work, no business
 - [-] TASK-109 Seed admin and Prof Harti teacher — secure env-driven seed ready; real credentials intentionally not committed
 - [x] TASK-110 Add disabled-account handling
 - [x] TASK-111 Add auth tests
-- [ ] TASK-112 Add offers schema/model
-- [ ] TASK-113 Add student subscriptions schema/model and statuses
-- [ ] TASK-114 Add subscriber entitlement middleware/service
-- [ ] TASK-115 Add admin subscription activation/status management
-- [ ] TASK-116 Add subscription access tests (ACTIVE vs PENDING/EXPIRED/SUSPENDED)
+- [x] TASK-112 Add offers schema/model
+- [x] TASK-113 Add student subscriptions schema/model and statuses
+- [x] TASK-114 Add subscriber entitlement middleware/service
+- [x] TASK-115 Add admin subscription activation/status management
+- [x] TASK-116 Add subscription access tests (ACTIVE vs PENDING/EXPIRED/SUSPENDED)
 
-Gate: no educational modules before critical auth and subscription-entitlement tests pass. No public student self-signup.
+Production database migration for `offers`, `student_subscriptions`, and subscription statuses was validated on a temporary Neon branch before being applied and re-verified on the production branch.
+
+Gate: critical auth and subscription-entitlement tests pass. No public student self-signup.
 
 # PHASE 2 — Academic Structure
 
