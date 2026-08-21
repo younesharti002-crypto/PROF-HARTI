@@ -1,0 +1,51 @@
+name: Portrait Hotfix QA
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "public/images/prof-harti-portrait-v3.svg"
+      - "scripts/extract-portrait.mjs"
+      - "src/components/ui/Section.tsx"
+      - "package.json"
+      - ".github/workflows/portrait-hotfix-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_URL: http://localhost:3000
+      AUTH_SECRET: portrait-ci-only-secret
+      DATABASE_URL: postgresql://user:password@localhost:5432/prof_harti_ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Access regression tests
+        run: npm run test:access
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Verify extracted portrait
+        run: |
+          test -s public/images/prof-harti-portrait-final.webp
+          node -e "const fs=require('fs'); const b=fs.readFileSync('public/images/prof-harti-portrait-final.webp'); if (b.subarray(0,4).toString()!=='RIFF' || b.subarray(8,12).toString()!=='WEBP') process.exit(1); console.log('Portrait WebP verified:', b.length, 'bytes')"
