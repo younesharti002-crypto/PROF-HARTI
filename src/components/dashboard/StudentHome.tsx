@@ -12,6 +12,8 @@ type LiveSession = {
   status: "SCHEDULED" | "LIVE" | "COMPLETED";
   replayUrl: string | null;
 };
+type AssessmentAttempt = { assessmentId: string; percent: number };
+type AssessmentItem = { id: string };
 
 export function StudentHome({
   locale,
@@ -28,6 +30,8 @@ export function StudentHome({
 }) {
   const ar = locale === "ar";
   const [sessions, setSessions] = useState<LiveSession[]>([]);
+  const [assessments, setAssessments] = useState<AssessmentItem[]>([]);
+  const [attempts, setAttempts] = useState<AssessmentAttempt[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -35,6 +39,14 @@ export function StudentHome({
       .then((response) => response.ok ? response.json() : null)
       .then((json) => {
         if (active && json?.data?.sessions) setSessions(json.data.sessions as LiveSession[]);
+      })
+      .catch(() => undefined);
+    fetch("/api/v1/student/assessments", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((json) => {
+        if (!active || !json?.data) return;
+        setAssessments((json.data.assessments || []) as AssessmentItem[]);
+        setAttempts((json.data.attempts || []) as AssessmentAttempt[]);
       })
       .catch(() => undefined);
     return () => { active = false; };
@@ -46,6 +58,7 @@ export function StudentHome({
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0];
   const nextLive = liveNow || scheduled || null;
   const replayCount = sessions.filter((session) => session.status === "COMPLETED" && session.replayUrl).length;
+  const bestQuizScore = attempts.length ? Math.max(...attempts.map((attempt) => attempt.percent)) : null;
 
   const formatDate = (value: string) => new Intl.DateTimeFormat(ar ? "ar-MA" : "fr-MA", {
     dateStyle: "medium",
@@ -75,16 +88,23 @@ export function StudentHome({
           <span className="text-xs font-black uppercase tracking-[0.2em] text-accent">STUDENT SPACE</span>
           <h1 className="mt-4 text-3xl font-bold sm:text-4xl">{ar ? `مرحبا ${studentName}` : `Bonjour ${studentName}`}</h1>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-chalk-dim sm:text-base">
-            {ar ? "دروسك، الحصص المباشرة، التسجيلات والتقدم الحقيقي ديالك في مكان واحد." : "Vos cours, lives, replays et votre progression réelle dans un seul espace."}
+            {ar ? "دروسك، الحصص المباشرة، التسجيلات، التمارين والنتائج الحقيقية ديالك في مكان واحد." : "Vos cours, lives, replays, exercices et résultats réels dans un seul espace."}
           </p>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-3">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <article className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-accent">{ar ? "التقدم" : "Progression"}</p>
             <p className="mt-3 text-3xl font-bold">{progressPercent}%</p>
             <p className="mt-2 text-xs text-chalk-dim">{progressCompleted} / {progressTotal} {ar ? "درس مكتمل" : "leçons terminées"}</p>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-accent" style={{ width: `${progressPercent}%` }} /></div>
+          </article>
+
+          <article className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-violet">QUIZ SCORE</p>
+            <p className="mt-3 text-3xl font-bold">{bestQuizScore === null ? "—" : `${bestQuizScore}%`}</p>
+            <p className="mt-2 text-xs text-chalk-dim">{assessments.length} {ar ? "تقييم منشور" : "évaluations publiées"} · {attempts.length} {ar ? "محاولة" : "tentatives"}</p>
+            <Link href={`/${locale}/assessments`} className="mt-5 inline-flex text-sm font-bold text-violet hover:underline">{ar ? "فتح التمارين" : "Voir les exercices"}</Link>
           </article>
 
           <article className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-6">
@@ -108,7 +128,7 @@ export function StudentHome({
           </article>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-2">
+        <section className="grid gap-4 md:grid-cols-3">
           <Link href={`/${locale}/courses`} className="group rounded-[2rem] border border-accent/25 bg-accent/10 p-7 transition hover:border-accent/50">
             <p className="text-xs font-black tracking-[0.18em] text-accent">01 · COURSES</p>
             <h2 className="mt-3 text-2xl font-bold">{ar ? "دروسي" : "Mes cours"}</h2>
@@ -121,6 +141,13 @@ export function StudentHome({
             <h2 className="mt-3 text-2xl font-bold">{ar ? "الحصص والتسجيلات" : "Lives & replays"}</h2>
             <p className="mt-2 text-sm leading-6 text-chalk-dim">{ar ? "الحصة القادمة، الدخول للبث والتسجيلات بعد نهاية الحصة." : "Prochain live, accès au direct et replays après la séance."}</p>
             <span className="mt-5 inline-flex text-sm font-black text-violet">{ar ? "فتح الحصص ←" : "Ouvrir les lives →"}</span>
+          </Link>
+
+          <Link href={`/${locale}/assessments`} className="group rounded-[2rem] border border-white/15 bg-white/[0.04] p-7 transition hover:border-accent/40">
+            <p className="text-xs font-black tracking-[0.18em] text-accent">03 · EXERCISES</p>
+            <h2 className="mt-3 text-2xl font-bold">{ar ? "التمارين والاختبارات" : "Exercices & quiz"}</h2>
+            <p className="mt-2 text-sm leading-6 text-chalk-dim">{ar ? "جاوب على الأسئلة، خذ التصحيح مباشرة وتتبع أحسن نتيجة." : "Répondez, obtenez la correction immédiate et suivez votre meilleur score."}</p>
+            <span className="mt-5 inline-flex text-sm font-black text-accent">{ar ? "ابدأ التمرين ←" : "Commencer →"}</span>
           </Link>
         </section>
       </div>
