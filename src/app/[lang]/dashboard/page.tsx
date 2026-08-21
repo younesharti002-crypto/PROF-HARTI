@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { isLocale } from "@/i18n/config";
 import { getAuthenticatedSession, SESSION_COOKIE_NAME } from "@/lib/auth/session";
+import { getStudentProgressSummary } from "@/lib/progress/student-progress";
 import { getStudentSubscriptionAccess } from "@/lib/subscriptions/student-access";
 import { StudentDashboard } from "@/components/dashboard/StudentDashboard";
 
@@ -27,6 +28,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ lang
 
     const access = await getStudentSubscriptionAccess(session.user.id);
     const active = access.state === "ACTIVE";
+    const progress = active
+      ? await getStudentProgressSummary(session.user.id)
+      : { totalLessons: 0, startedLessons: 0, completedLessons: 0, percent: 0 };
 
     const statusLabel = lang === "ar"
       ? active
@@ -50,7 +54,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ lang
 
     return (
       <>
-        <StudentDashboard locale={lang} studentName={session.user.fullName} />
+        <StudentDashboard
+          locale={lang}
+          studentName={session.user.fullName}
+          progressPercent={progress.percent}
+          progressCompleted={progress.completedLessons}
+          progressTotal={progress.totalLessons}
+        />
 
         <div
           className={`fixed end-5 top-5 z-50 rounded-full border px-4 py-2 text-xs font-black shadow-xl shadow-black/20 backdrop-blur ${
