@@ -178,9 +178,16 @@ export function StudentCourses({ lang }: { lang: "ar" | "fr" }) {
                                 <p className="text-xs font-black text-chalk-dim">LESSON {String(lessonIndex + 1).padStart(2, "0")}</p>
                                 <h4 className="mt-2 text-base font-bold sm:text-lg">{lesson.title}</h4>
                                 {lesson.summary ? <p className="mt-2 max-w-3xl text-sm leading-6 text-chalk-dim">{lesson.summary}</p> : null}
+                                <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-chalk-dim">
+                                  <span>{lesson.videoUrl ? (ar ? "فيديو" : "Vidéo") : (ar ? "بدون فيديو" : "Sans vidéo")}</span>
+                                  <span>·</span>
+                                  <span>{lesson.pdfUrl ? "PDF" : (ar ? "بدون PDF" : "Sans PDF")}</span>
+                                </div>
                               </div>
                               <div className="flex flex-wrap gap-2">
-                                {lesson.videoUrl ? <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="rounded-full bg-accent px-4 py-2 text-xs font-black text-board-900">{ar ? "مشاهدة الفيديو" : "Voir la vidéo"}</a> : null}
+                                <Link href={`/${lang}/courses/${activeCourseId}/lessons/${lesson.id}`} className="rounded-full bg-accent px-4 py-2 text-xs font-black text-board-900">
+                                  {ar ? "فتح الدرس" : "Ouvrir la leçon"}
+                                </Link>
                                 {lesson.pdfUrl ? <a href={lesson.pdfUrl} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold hover:border-accent/60">PDF</a> : null}
                               </div>
                             </div>
