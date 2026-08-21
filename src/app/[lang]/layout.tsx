@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { Cairo, Poppins } from "next/font/google";
 import "../globals.css";
+import { PwaRegister } from "@/components/pwa/PwaRegister";
 import { isLocale, localeDirection, locales, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 
@@ -20,6 +21,13 @@ const cairo = Cairo({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#050b13",
+};
+
 export function generateStaticParams(): { lang: Locale }[] {
   return locales.map((lang) => ({ lang }));
 }
@@ -36,6 +44,20 @@ export async function generateMetadata({
   return {
     title: dict.meta.title,
     description: dict.meta.description,
+    applicationName: "PROF HARTI Academy",
+    manifest: "/manifest.webmanifest",
+    icons: {
+      icon: [
+        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: "PROF HARTI Academy",
+    },
     alternates: {
       languages: {
         ar: "/ar",
@@ -60,7 +82,10 @@ export default async function LocaleLayout({
 
   return (
     <html lang={lang} dir={localeDirection[lang]}>
-      <body className={`${poppins.variable} ${cairo.variable} antialiased`}>{children}</body>
+      <body className={`${poppins.variable} ${cairo.variable} antialiased`}>
+        <PwaRegister />
+        {children}
+      </body>
     </html>
   );
 }
