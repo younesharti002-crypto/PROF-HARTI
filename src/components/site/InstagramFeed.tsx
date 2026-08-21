@@ -15,69 +15,36 @@ export function InstagramFeed({ dict }: { dict: Dictionary }) {
   const { instagram } = dict;
 
   return (
-    <Section id="instagram" className="border-y border-white/10 bg-board-900/45">
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">
-            {instagram.eyebrow}
-          </p>
-          <h2 className="mt-3 text-2xl font-semibold leading-tight text-chalk sm:text-3xl md:text-4xl">
-            {instagram.title}
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-chalk-dim">{instagram.description}</p>
+    <Section id="instagram" className="relative overflow-hidden bg-[#07111c]">
+      <div aria-hidden="true" className="pointer-events-none absolute end-[-7rem] top-[-5rem] size-80 rounded-full border border-accent/[0.07]" />
+      <div className="premium-panel relative overflow-hidden rounded-[2rem] p-6 sm:p-8 lg:p-10">
+        <div className="grid gap-8 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
+          <div>
+            <div className="flex items-center gap-3"><span className="grid size-11 place-items-center rounded-2xl border border-accent/25 bg-accent/[0.08] text-accent"><InstagramGlyph className="size-5" /></span><p className="text-[10px] font-black uppercase tracking-[0.24em] text-accent">{instagram.eyebrow}</p></div>
+            <h2 className="mt-5 max-w-2xl text-3xl font-black leading-tight text-chalk sm:text-4xl">{instagram.title}</h2>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-chalk-dim sm:text-base">{instagram.description}</p>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer noopener" className="gold-button mt-7 inline-flex items-center gap-3 rounded-lg px-5 py-3 text-sm font-black">
+              <InstagramGlyph className="size-4" />
+              {instagram.cta}
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+
+          <div className="rounded-[1.7rem] border border-white/10 bg-[#050b13]/70 p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-4 border-b border-white/[0.07] pb-4">
+              <div><p className="gold-text text-xl font-black">{instagram.handle}</p><p className="mt-1 text-xs text-chalk-dim">Physique · Chimie · BAC</p></div>
+              <span className="grid size-12 place-items-center rounded-full border border-accent/25 bg-accent/[0.08] text-accent"><InstagramGlyph className="size-5" /></span>
+            </div>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              {instagram.posts.map((post) => (
+                <a key={post.title} href={INSTAGRAM_URL} target="_blank" rel="noreferrer noopener" className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-3.5 transition hover:border-accent/20 hover:bg-accent/[0.035]">
+                  <div className="flex items-center justify-between gap-2"><span className="text-[9px] font-black uppercase tracking-[0.14em] text-accent">{post.tag}</span><span className="text-[9px] text-chalk-dim/60">{post.kind}</span></div>
+                  <p className="mt-2 text-xs font-bold leading-5 text-chalk-dim">{post.title}</p>
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
-
-        <a
-          href={INSTAGRAM_URL}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="inline-flex w-fit items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-board-900 transition-opacity hover:opacity-90"
-        >
-          <InstagramGlyph className="size-4" />
-          {instagram.cta}
-        </a>
-      </div>
-
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {instagram.posts.map((post, index) => (
-          <a
-            key={post.title}
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="group relative flex aspect-[4/3] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-board-800/60 p-5 transition-colors hover:border-accent/40"
-          >
-            <span
-              aria-hidden="true"
-              className={`pointer-events-none absolute -bottom-16 -end-10 size-44 rounded-full blur-2xl transition-opacity group-hover:opacity-90 ${
-                index % 2 === 0 ? "bg-accent/15" : "bg-violet/15"
-              }`}
-            />
-
-            <span className="relative flex items-center justify-between gap-2">
-              <span
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
-                  index % 2 === 0 ? "bg-accent/15 text-accent" : "bg-violet/15 text-violet"
-                }`}
-              >
-                {post.tag}
-              </span>
-              <span className="text-[11px] uppercase tracking-[0.16em] text-chalk-dim">
-                {post.kind}
-              </span>
-            </span>
-
-            <span className="relative">
-              <span className="block text-base font-semibold leading-snug text-chalk">
-                {post.title}
-              </span>
-              <span className="mt-2 inline-flex items-center gap-1.5 text-xs text-chalk-dim">
-                <InstagramGlyph className="size-3.5" />
-                {instagram.handle}
-              </span>
-            </span>
-          </a>
-        ))}
       </div>
     </Section>
   );
