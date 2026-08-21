@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 export const INSTAGRAM_URL = "https://instagram.com/prof_harti";
 
 /**
- * Portrait of Prof Harti used in the Hero and About sections.
+ * Portrait of Prof Harti used across the public experience.
  * Replace this single file to swap the official photo — no code changes needed.
  */
 export const PORTRAIT_SRC = "/images/prof-harti-portrait.jpeg";
@@ -18,8 +18,8 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section id={id} className={`scroll-mt-20 px-5 py-14 sm:px-8 md:py-20 ${className}`}>
-      <div className="mx-auto w-full max-w-6xl">{children}</div>
+    <section id={id} className={`scroll-mt-24 px-5 py-16 sm:px-8 md:py-24 ${className}`}>
+      <div className="mx-auto w-full max-w-7xl">{children}</div>
     </section>
   );
 }
@@ -34,12 +34,15 @@ export function SectionHeading({
   lead?: string;
 }) {
   return (
-    <header className="max-w-2xl">
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">{eyebrow}</p>
-      <h2 className="mt-3 text-2xl font-semibold leading-tight text-chalk sm:text-3xl md:text-4xl">
+    <header className="max-w-3xl">
+      <div className="flex items-center gap-3">
+        <span className="h-px w-8 bg-accent/70" aria-hidden="true" />
+        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-accent">{eyebrow}</p>
+      </div>
+      <h2 className="mt-4 text-2xl font-black leading-tight tracking-[-0.015em] text-chalk sm:text-3xl md:text-4xl">
         {title}
       </h2>
-      {lead ? <p className="mt-4 text-base leading-relaxed text-chalk-dim">{lead}</p> : null}
+      {lead ? <p className="mt-4 max-w-2xl text-sm leading-7 text-chalk-dim sm:text-base">{lead}</p> : null}
     </header>
   );
 }
@@ -47,7 +50,7 @@ export function SectionHeading({
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`rounded-2xl border border-white/10 bg-board-800/60 p-6 shadow-[0_18px_40px_rgba(0,0,0,0.25)] backdrop-blur-[2px] ${className}`}
+      className={`rounded-[1.5rem] border border-white/10 bg-gradient-to-br from-white/[0.055] to-white/[0.018] p-6 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur-sm ${className}`}
     >
       {children}
     </div>
