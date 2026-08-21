@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:auth": "node --test tests/auth/*.test.ts",
+    "test:subscriptions": "node --test tests/subscriptions/*.test.ts",
     "seed:core-users": "node scripts/seed-core-users.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
