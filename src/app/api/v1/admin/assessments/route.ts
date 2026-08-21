@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { assessmentChoices, assessmentQuestions, assessments } from "@/db/assessment-schema";
 import { courses } from "@/db/content-schema";
+import { validateAssessmentPublish } from "@/lib/assessments/publish-validation";
 import { authorizeRequest } from "@/lib/auth/authorization";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -126,10 +127,13 @@ export async function POST(request: NextRequest) {
       if (!courseId || !(await canManageCourse(courseId, userId, role))) return errorResponse(403, "FORBIDDEN", "You cannot publish this assessment.");
       if (status === "PUBLISHED") {
         const questions = await db.select({ id: assessmentQuestions.id }).from(assessmentQuestions).where(eq(assessmentQuestions.assessmentId, assessmentId));
-        if (!questions.length) return errorResponse(409, "QUESTION_REQUIRED", "Add at least one question before publishing.");
-        const choices = await db.select({ questionId: assessmentChoices.questionId, isCorrect: assessmentChoices.isCorrect }).from(assessmentChoices).where(inArray(assessmentChoices.questionId, questions.map((q) => q.id)));
-        const invalid = questions.some((q) => !choices.some((c) => c.questionId === q.id && c.isCorrect));
-        if (invalid) return errorResponse(409, "CORRECT_CHOICE_REQUIRED", "Each question needs at least one correct choice.");
+        const choices = questions.length
+          ? await db.select({ questionId: assessmentChoices.questionId, isCorrect: assessmentChoices.isCorrect }).from(assessmentChoices).where(inArray(assessmentChoices.questionId, questions.map((q) => q.id)))
+          : [];
+        const issue = validateAssessmentPublish(questions.map((question) => question.id), choices);
+        if (issue === "QUESTION_REQUIRED") return errorResponse(409, issue, "Add at least one question before publishing.");
+        if (issue === "CHOICES_REQUIRED") return errorResponse(409, issue, "Each question needs at least two choices.");
+        if (issue === "EXACTLY_ONE_CORRECT_REQUIRED") return errorResponse(409, issue, "Each question needs exactly one correct choice.");
       }
       const [record] = await db.update(assessments).set({ status, updatedAt: new Date() }).where(eq(assessments.id, assessmentId)).returning();
       return NextResponse.json({ data: { record } });
