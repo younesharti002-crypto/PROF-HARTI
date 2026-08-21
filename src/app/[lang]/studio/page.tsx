@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ContentStudio } from "@/components/content/ContentStudio";
@@ -14,5 +15,15 @@ export default async function StudioPage({ params }: { params: Promise<{ lang: s
     redirect(`/${locale}/login`);
   }
 
-  return <ContentStudio lang={locale} />;
+  return (
+    <>
+      <ContentStudio lang={locale} />
+      <Link
+        href={`/${locale}/studio/live`}
+        className="fixed bottom-5 start-5 z-50 rounded-full bg-violet px-5 py-3 text-sm font-black text-white shadow-xl shadow-black/25"
+      >
+        {locale === "ar" ? "الحصص المباشرة والتسجيلات" : "Lives & replays"}
+      </Link>
+    </>
+  );
 }
