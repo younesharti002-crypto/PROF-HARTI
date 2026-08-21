@@ -3,17 +3,11 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { offers, studentSubscriptions } from "@/db/schema";
 import { authorizeRequest } from "@/lib/auth/authorization";
+import type { AuthenticatedSession } from "@/lib/auth/session";
 import { isSubscriptionEntitled } from "@/lib/subscriptions/core";
 
 export type SubscriberAuthorizationResult =
-  | {
-      ok: true;
-      session: Awaited<ReturnType<typeof authorizeRequest>> extends infer Result
-        ? Result extends { ok: true; session: infer Session }
-          ? Session
-          : never
-        : never;
-    }
+  | { ok: true; session: AuthenticatedSession }
   | {
       ok: false;
       reason: "UNAUTHENTICATED" | "FORBIDDEN" | "SUBSCRIPTION_REQUIRED";
