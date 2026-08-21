@@ -2,7 +2,7 @@ import { and, asc, eq, isNull, or } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
-import { chapters, courses, lessons } from "@/db/content-schema";
+import { chapters, courses, lessonProgress, lessons } from "@/db/content-schema";
 import { studentProfiles, subjects } from "@/db/schema";
 import { LessonViewer } from "@/components/content/LessonViewer";
 import { isLocale } from "@/i18n/config";
@@ -82,9 +82,20 @@ export default async function LessonPage({
     .where(and(eq(lessons.chapterId, row.chapterId), eq(lessons.status, "PUBLISHED")))
     .orderBy(asc(lessons.position), asc(lessons.title));
 
+  const [progress] = await db
+    .select({ status: lessonProgress.status })
+    .from(lessonProgress)
+    .where(and(eq(lessonProgress.studentId, session.user.id), eq(lessonProgress.lessonId, row.lessonId)))
+    .limit(1);
+
   const currentIndex = chapterLessons.findIndex((item) => item.id === row.lessonId);
   const previousLesson = currentIndex > 0 ? chapterLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex >= 0 && currentIndex < chapterLessons.length - 1 ? chapterLessons[currentIndex + 1] : null;
+  const initialProgressStatus = progress?.status === "COMPLETED"
+    ? "COMPLETED"
+    : progress?.status === "STARTED"
+      ? "STARTED"
+      : "NONE";
 
   return (
     <LessonViewer
@@ -102,6 +113,7 @@ export default async function LessonPage({
       }}
       previousLesson={previousLesson}
       nextLesson={nextLesson}
+      initialProgressStatus={initialProgressStatus}
     />
   );
 }
