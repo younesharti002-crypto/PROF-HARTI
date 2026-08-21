@@ -41,9 +41,9 @@ Definition of done: app starts, landing works, AR/FR + RTL/LTR work, no business
 - [x] TASK-106 Add role middleware
 - [x] TASK-107 Build login UI
 - [x] TASK-108 Add logout
-- [ ] TASK-109 Seed admin and Prof Harti teacher
-- [ ] TASK-110 Add disabled-account handling
-- [ ] TASK-111 Add auth tests
+- [-] TASK-109 Seed admin and Prof Harti teacher — secure env-driven seed ready; real credentials intentionally not committed
+- [x] TASK-110 Add disabled-account handling
+- [x] TASK-111 Add auth tests
 - [ ] TASK-112 Add offers schema/model
 - [ ] TASK-113 Add student subscriptions schema/model and statuses
 - [ ] TASK-114 Add subscriber entitlement middleware/service
