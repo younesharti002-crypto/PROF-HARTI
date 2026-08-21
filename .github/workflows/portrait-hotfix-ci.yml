@@ -1,20 +1,15 @@
-name: PWA QA
+name: Portrait Hotfix QA
 
 on:
   pull_request:
     branches:
       - main
     paths:
-      - "public/manifest.webmanifest"
-      - "public/sw.js"
-      - "public/icons/**"
       - "public/images/prof-harti-portrait-v3.svg"
       - "scripts/extract-portrait.mjs"
-      - "src/components/pwa/**"
       - "src/components/ui/Section.tsx"
-      - "src/app/[lang]/layout.tsx"
       - "package.json"
-      - ".github/workflows/pwa-ci.yml"
+      - ".github/workflows/portrait-hotfix-ci.yml"
   workflow_dispatch:
 
 permissions:
@@ -26,7 +21,7 @@ jobs:
     timeout-minutes: 20
     env:
       APP_URL: http://localhost:3000
-      AUTH_SECRET: ci-only-secret
+      AUTH_SECRET: portrait-ci-only-secret
       DATABASE_URL: postgresql://user:password@localhost:5432/prof_harti_ci
     steps:
       - name: Checkout
@@ -41,14 +36,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Regression tests
-        run: npm run test:qa
+      - name: Access regression tests
+        run: npm run test:access
 
       - name: Typecheck
         run: npm run typecheck
-
-      - name: Lint PWA changes
-        run: npx eslint "src/components/pwa/PwaRegister.tsx" "src/app/[lang]/layout.tsx"
 
       - name: Production build
         run: npm run build
