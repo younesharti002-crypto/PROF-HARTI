@@ -29,6 +29,48 @@ jobs:
         continue-on-error: true
         run: npm ci --no-audit --no-fund
 
+      - name: Auth tests
+        id: auth_tests
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: npm run test:auth
+
+      - name: Publish Auth Tests status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const outcome = '${{ steps.auth_tests.outcome }}';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: outcome === 'success' ? 'success' : 'failure',
+              context: 'PHASE1 / Auth Tests',
+              description: outcome === 'success' ? 'npm run test:auth passed' : 'npm run test:auth failed or was skipped'
+            });
+
+      - name: Subscription tests
+        id: subscription_tests
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
+        run: npm run test:subscriptions
+
+      - name: Publish Subscription Tests status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const outcome = '${{ steps.subscription_tests.outcome }}';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: outcome === 'success' ? 'success' : 'failure',
+              context: 'PHASE1 / Subscription Tests',
+              description: outcome === 'success' ? 'npm run test:subscriptions passed' : 'npm run test:subscriptions failed or was skipped'
+            });
+
       - name: Typecheck
         id: typecheck
         if: steps.install.outcome == 'success'
@@ -96,6 +138,8 @@ jobs:
         if: always()
         run: |
           test "${{ steps.install.outcome }}" = "success"
+          test "${{ steps.auth_tests.outcome }}" = "success"
+          test "${{ steps.subscription_tests.outcome }}" = "success"
           test "${{ steps.typecheck.outcome }}" = "success"
           test "${{ steps.lint.outcome }}" = "success"
           test "${{ steps.build.outcome }}" = "success"

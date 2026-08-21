@@ -3,33 +3,16 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { normalizeMoroccanPhone } from "@/lib/auth/phone";
 import { verifyPassword } from "@/lib/auth/password";
+import {
+  authenticateLoginCore,
+  type LoginCredentialUser,
+  type LoginResult,
+  type SafeLoginUser,
+} from "@/lib/auth/login-core";
 
-export type SafeLoginUser = {
-  id: string;
-  fullName: string;
-  phone: string;
-  role: "STUDENT" | "PARENT" | "TEACHER" | "ADMIN";
-  status: "ACTIVE" | "DISABLED";
-  preferredLanguage: "ar" | "fr";
-};
+export type { LoginResult, SafeLoginUser } from "@/lib/auth/login-core";
 
-export type LoginResult =
-  | { ok: true; user: SafeLoginUser }
-  | {
-      ok: false;
-      reason: "INVALID_INPUT" | "INVALID_CREDENTIALS" | "ACCOUNT_DISABLED";
-    };
-
-export async function authenticateWithPhoneAndPassword(
-  phoneInput: string,
-  password: string,
-): Promise<LoginResult> {
-  const phone = normalizeMoroccanPhone(phoneInput);
-
-  if (!phone || typeof password !== "string" || password.length === 0) {
-    return { ok: false, reason: "INVALID_INPUT" };
-  }
-
+async function findUserByPhone(phone: string): Promise<LoginCredentialUser | null> {
   const [user] = await db
     .select({
       id: users.id,
@@ -44,37 +27,27 @@ export async function authenticateWithPhoneAndPassword(
     .where(eq(users.phone, phone))
     .limit(1);
 
-  if (!user) {
-    return { ok: false, reason: "INVALID_CREDENTIALS" };
-  }
+  return user ?? null;
+}
 
-  const passwordMatches = await verifyPassword(password, user.passwordHash);
-
-  if (!passwordMatches) {
-    return { ok: false, reason: "INVALID_CREDENTIALS" };
-  }
-
-  if (user.status !== "ACTIVE") {
-    return { ok: false, reason: "ACCOUNT_DISABLED" };
-  }
-
+async function touchUserLogin(userId: string, at: Date): Promise<void> {
   await db
     .update(users)
     .set({
-      lastLoginAt: new Date(),
-      updatedAt: new Date(),
+      lastLoginAt: at,
+      updatedAt: at,
     })
-    .where(eq(users.id, user.id));
+    .where(eq(users.id, userId));
+}
 
-  return {
-    ok: true,
-    user: {
-      id: user.id,
-      fullName: user.fullName,
-      phone: user.phone,
-      role: user.role,
-      status: user.status,
-      preferredLanguage: user.preferredLanguage,
-    },
-  };
+export async function authenticateWithPhoneAndPassword(
+  phoneInput: string,
+  password: string,
+): Promise<LoginResult> {
+  return authenticateLoginCore(phoneInput, password, {
+    normalizePhone: normalizeMoroccanPhone,
+    findUserByPhone,
+    verifyPassword,
+    touchUserLogin,
+  });
 }

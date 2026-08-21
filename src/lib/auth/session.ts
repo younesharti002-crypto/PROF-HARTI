@@ -99,6 +99,15 @@ export async function getAuthenticatedSession(
   };
 }
 
+export async function deleteSessionByToken(token: string): Promise<void> {
+  if (!token || token.length > 256) {
+    return;
+  }
+
+  const tokenHash = hashSessionToken(token);
+  await db.delete(authSessions).where(eq(authSessions.tokenHash, tokenHash));
+}
+
 export function getSessionCookieOptions(expiresAt: Date) {
   return {
     httpOnly: true,
@@ -106,5 +115,15 @@ export function getSessionCookieOptions(expiresAt: Date) {
     sameSite: "lax" as const,
     path: "/",
     expires: expiresAt,
+  };
+}
+
+export function getClearedSessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    expires: new Date(0),
   };
 }
