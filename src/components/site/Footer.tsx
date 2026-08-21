@@ -4,6 +4,8 @@ import { locales, localeLabel, type Locale } from "@/i18n/config";
 import { INSTAGRAM_URL } from "@/components/ui/Section";
 
 export function Footer({ dict, locale }: { dict: Dictionary; locale: Locale }) {
+  const releaseLabel = locale === "ar" ? "الإصدار الأول" : "Version 1";
+
   return (
     <footer className="border-t border-white/10 bg-board-900/70 px-5 py-10 sm:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -58,7 +60,7 @@ export function Footer({ dict, locale }: { dict: Dictionary; locale: Locale }) {
       </div>
 
       <div className="mx-auto mt-8 w-full max-w-6xl border-t border-white/10 pt-4 text-[11px] text-chalk-dim">
-        © {new Date().getFullYear()} PROF HARTI Academy — {dict.footer.rights} · {dict.footer.phase}
+        © {new Date().getFullYear()} PROF HARTI Academy — {dict.footer.rights} · {releaseLabel}
       </div>
     </footer>
   );
