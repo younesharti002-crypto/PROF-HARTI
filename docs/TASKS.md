@@ -64,11 +64,11 @@ Gate: critical auth and subscription-entitlement tests pass. No public student s
 - [x] TASK-206 Student profile
 - [x] TASK-207 Parent profile
 - [x] TASK-208 Teacher profile
-- [ ] TASK-209 Group assignment
-- [ ] TASK-210 Admin CRUD UI
-- [ ] TASK-211 Seed 2BAC / PC / SM / Physique / Chimie
+- [x] TASK-209 Group assignment
+- [x] TASK-210 Admin CRUD UI
+- [x] TASK-211 Seed 2BAC / PC / SM / Physique / Chimie
 
-Phase 2 academic-model migration was validated on a temporary Neon branch, applied to production, and re-verified for the academic tables, profile tables, key indexes, and the offer-to-academic-year relationship.
+Phase 2 academic-model migration was validated on a temporary Neon branch, applied to production, and re-verified for the academic tables, profile tables, key indexes, and the offer-to-academic-year relationship. Group assignment rules are covered by CI tests and enforced server-side. The protected AR/FR academic admin UI supports create/read/update/delete for academic structures and primary-group assignment. Production seed was verified for `2026/2027`, `2BAC`, `PC`, `SM`, `Physique`, `Chimie`, `2BAC-PC-A`, and `2BAC-SM-A`.
 
 # PHASE 3 — Courses & Lessons
 
