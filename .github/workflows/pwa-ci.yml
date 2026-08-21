@@ -8,8 +8,12 @@ on:
       - "public/manifest.webmanifest"
       - "public/sw.js"
       - "public/icons/**"
+      - "public/images/prof-harti-portrait-v3.svg"
+      - "scripts/extract-portrait.mjs"
       - "src/components/pwa/**"
+      - "src/components/ui/Section.tsx"
       - "src/app/[lang]/layout.tsx"
+      - "package.json"
       - ".github/workflows/pwa-ci.yml"
   workflow_dispatch:
 
@@ -48,3 +52,8 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Verify extracted portrait
+        run: |
+          test -s public/images/prof-harti-portrait-final.webp
+          node -e "const fs=require('fs'); const b=fs.readFileSync('public/images/prof-harti-portrait-final.webp'); if (b.subarray(0,4).toString()!=='RIFF' || b.subarray(8,12).toString()!=='WEBP') process.exit(1); console.log('Portrait WebP verified:', b.length, 'bytes')"
