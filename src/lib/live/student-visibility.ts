@@ -1,7 +1,5 @@
-export type StudentLiveResourceState = "SCHEDULED" | "LIVE" | "COMPLETED" | "CANCELLED";
-
 type LiveResources = {
-  status: StudentLiveResourceState;
+  status: string;
   joinUrl: string | null;
   replayUrl: string | null;
   replayPdfUrl: string | null;
