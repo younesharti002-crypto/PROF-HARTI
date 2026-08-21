@@ -2,12 +2,31 @@ import { and, asc, eq, inArray, isNull, or } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { chapters, courses, lessons } from "@/db/content-schema";
-import { offers, studentProfiles, studentSubscriptions, subjects } from "@/db/schema";
+import { studentProfiles, subjects } from "@/db/schema";
 import { authorizeRequest } from "@/lib/auth/authorization";
-import { isSubscriptionEntitled } from "@/lib/subscriptions/core";
+import {
+  getStudentSubscriptionAccess,
+  type StudentAccessState,
+} from "@/lib/subscriptions/student-access";
 
-function errorResponse(status: number, code: string, message: string) {
-  return NextResponse.json({ error: { code, message } }, { status, headers: { "Cache-Control": "no-store" } });
+function errorResponse(status: number, code: string, message: string, subscriptionState?: StudentAccessState) {
+  return NextResponse.json(
+    { error: { code, message, subscriptionState } },
+    { status, headers: { "Cache-Control": "no-store" } },
+  );
+}
+
+function subscriptionError(state: Exclude<StudentAccessState, "ACTIVE">) {
+  if (state === "PENDING") {
+    return errorResponse(403, "SUBSCRIPTION_PENDING", "Subscription is waiting for activation.", state);
+  }
+  if (state === "SUSPENDED") {
+    return errorResponse(403, "SUBSCRIPTION_SUSPENDED", "Subscription is suspended.", state);
+  }
+  if (state === "EXPIRED") {
+    return errorResponse(403, "SUBSCRIPTION_EXPIRED", "Subscription has expired.", state);
+  }
+  return errorResponse(403, "SUBSCRIPTION_REQUIRED", "An active subscription is required.", state);
 }
 
 export async function GET(request: NextRequest) {
@@ -31,38 +50,9 @@ export async function GET(request: NextRequest) {
     return errorResponse(403, "STUDENT_PROFILE_REQUIRED", "Student academic profile is required.");
   }
 
-  const subscriptionRows = await db
-    .select({
-      academicYearId: offers.academicYearId,
-      subscriptionStatus: studentSubscriptions.status,
-      subscriptionStartsAt: studentSubscriptions.startsAt,
-      subscriptionEndsAt: studentSubscriptions.endsAt,
-      offerActive: offers.active,
-      offerStartsAt: offers.startsAt,
-      offerEndsAt: offers.endsAt,
-    })
-    .from(studentSubscriptions)
-    .innerJoin(offers, eq(studentSubscriptions.offerId, offers.id))
-    .where(and(eq(studentSubscriptions.studentId, userId), eq(studentSubscriptions.status, "ACTIVE")));
-
-  const now = new Date();
-  const entitledAcademicYearIds = Array.from(
-    new Set(
-      subscriptionRows
-        .filter((row) =>
-          Boolean(row.academicYearId) &&
-          isSubscriptionEntitled(
-            { status: row.subscriptionStatus, startsAt: row.subscriptionStartsAt, endsAt: row.subscriptionEndsAt },
-            { active: row.offerActive, startsAt: row.offerStartsAt, endsAt: row.offerEndsAt },
-            now,
-          ),
-        )
-        .map((row) => row.academicYearId as string),
-    ),
-  );
-
-  if (!entitledAcademicYearIds.length) {
-    return errorResponse(403, "SUBSCRIPTION_REQUIRED", "An active subscription is required.");
+  const access = await getStudentSubscriptionAccess(userId);
+  if (access.state !== "ACTIVE") {
+    return subscriptionError(access.state);
   }
 
   const streamCondition = profile.streamId
@@ -88,7 +78,7 @@ export async function GET(request: NextRequest) {
       and(
         eq(courses.status, "PUBLISHED"),
         eq(courses.levelId, profile.levelId),
-        inArray(courses.academicYearId, entitledAcademicYearIds),
+        inArray(courses.academicYearId, access.entitledAcademicYearIds),
         streamCondition,
       ),
     )
@@ -113,7 +103,14 @@ export async function GET(request: NextRequest) {
     : [];
 
   return NextResponse.json(
-    { data: { courses: courseRows, chapters: chapterRows, lessons: lessonRows } },
+    {
+      data: {
+        subscriptionState: access.state,
+        courses: courseRows,
+        chapters: chapterRows,
+        lessons: lessonRows,
+      },
+    },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
