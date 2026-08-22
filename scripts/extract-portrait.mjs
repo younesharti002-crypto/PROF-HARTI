@@ -1,8 +1,8 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const imagePath = path.resolve("public/images/prof-harti-portrait-final.webp");
-const image = await readFile(imagePath);
+let image = await readFile(imagePath);
 
 if (
   image.length < 10000 ||
@@ -13,6 +13,13 @@ if (
 }
 
 const declaredSize = image.readUInt32LE(4) + 8;
+
+// The Git blob transport may drop the final RIFF padding byte. Restore it safely.
+if (declaredSize === image.length + 1) {
+  image = Buffer.concat([image, Buffer.from([0])]);
+  await writeFile(imagePath, image);
+}
+
 if (declaredSize !== image.length) {
   throw new Error(`Portrait is truncated: expected ${declaredSize} bytes, got ${image.length}`);
 }
