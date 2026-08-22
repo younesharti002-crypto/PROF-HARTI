@@ -1,9 +1,9 @@
-const CACHE_NAME = "prof-harti-static-v1";
+const CACHE_NAME = "prof-harti-static-v2";
 const STATIC_ASSETS = [
   "/manifest.webmanifest",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/apple-touch-icon.png"
+  "/icons/icon-192-v2.png",
+  "/icons/icon-512-v2.png",
+  "/icons/apple-touch-icon-v2.png"
 ];
 
 self.addEventListener("install", (event) => {
