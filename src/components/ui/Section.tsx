@@ -4,7 +4,7 @@ export const INSTAGRAM_URL = "https://instagram.com/prof_harti";
 
 /**
  * Portrait of Prof Harti used across the public experience.
- * The real WebP is extracted from the approved source image before dev/build.
+ * The real WebP is extracted from the approved source image before dev/build and served directly in production.
  */
 export const PORTRAIT_SRC = "/images/prof-harti-portrait-final.webp";
 
