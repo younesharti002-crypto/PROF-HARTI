@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-board-900: #050b13;
-  --color-board-800: #08121d;
-  --color-board-700: #0d1b29;
-  --color-board-600: #142537;
-  --color-petrol: #0a1825;
-  --color-chalk: #f7f5ef;
-  --color-chalk-dim: #a8b0ba;
-  --color-accent: #d8a72d;
-  --color-accent-soft: #f0cf72;
-  --color-violet: #8ea0bd;
+  --color-board-900: #0b0618;
+  --color-board-800: #130a2b;
+  --color-board-700: #21104c;
+  --color-board-600: #31176c;
+  --color-petrol: #160b33;
+  --color-chalk: #fbf9ff;
+  --color-chalk-dim: #c2b9d4;
+  --color-accent: #8b6cec;
+  --color-accent-soft: #b29afd;
+  --color-violet: #d7c9ff;
 
   --font-sans: var(--font-latin), system-ui, sans-serif;
   --font-display: var(--font-latin), system-ui, sans-serif;
@@ -29,9 +29,9 @@ body {
   background-color: var(--color-board-900);
   color: var(--color-chalk);
   background-image:
-    radial-gradient(circle at 14% 4%, rgba(216, 167, 45, 0.08), transparent 30rem),
-    radial-gradient(circle at 88% 18%, rgba(74, 101, 131, 0.12), transparent 34rem),
-    linear-gradient(155deg, #040a12 0%, #07111c 48%, #091725 100%);
+    radial-gradient(circle at 16% 7%, rgba(139, 108, 236, 0.16), transparent 31rem),
+    radial-gradient(circle at 86% 16%, rgba(215, 189, 98, 0.07), transparent 30rem),
+    linear-gradient(150deg, #090515 0%, #13092e 48%, #080411 100%);
   background-attachment: fixed;
 }
 
@@ -41,10 +41,10 @@ body {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(to right, rgba(216, 167, 45, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(216, 167, 45, 0.035) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: radial-gradient(ellipse at 50% 0%, black 0%, transparent 84%);
+    linear-gradient(30deg, transparent 24%, rgba(139, 108, 236, 0.05) 25%, rgba(139, 108, 236, 0.05) 26%, transparent 27%, transparent 74%, rgba(139, 108, 236, 0.05) 75%, rgba(139, 108, 236, 0.05) 76%, transparent 77%),
+    linear-gradient(150deg, transparent 24%, rgba(139, 108, 236, 0.04) 25%, rgba(139, 108, 236, 0.04) 26%, transparent 27%, transparent 74%, rgba(139, 108, 236, 0.04) 75%, rgba(139, 108, 236, 0.04) 76%, transparent 77%);
+  background-size: 72px 124px;
+  mask-image: radial-gradient(ellipse at 50% 0%, black 0%, transparent 88%);
 }
 
 [dir="rtl"] body {
@@ -58,27 +58,27 @@ body {
 
 ::selection {
   background-color: var(--color-accent);
-  color: #070b11;
+  color: #0b0618;
 }
 
 .gold-text {
-  color: #e4b53e;
-  background: linear-gradient(110deg, #f7db7b 0%, #d5a124 45%, #f2cb60 100%);
+  color: #e7c95f;
+  background: linear-gradient(110deg, #fff0a6 0%, #d7bd62 45%, #f1d87c 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gold-button {
-  color: #080d14;
-  background: linear-gradient(135deg, #f0c85e 0%, #d7a326 52%, #bf8614 100%);
-  box-shadow: 0 12px 36px rgba(196, 142, 25, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  background: linear-gradient(135deg, #9b7cf4 0%, #7b5bdd 52%, #5c3db7 100%);
+  box-shadow: 0 14px 38px rgba(111, 77, 205, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .premium-panel {
-  border: 1px solid rgba(216, 167, 45, 0.18);
-  background: linear-gradient(150deg, rgba(13, 27, 41, 0.9), rgba(5, 11, 19, 0.9));
-  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(139, 108, 236, 0.22);
+  background: linear-gradient(150deg, rgba(34, 16, 76, 0.9), rgba(11, 6, 24, 0.92));
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .premium-hero-grid {
@@ -100,9 +100,9 @@ body {
   isolation: isolate;
   border-radius: 1.8rem;
   overflow: hidden;
-  border: 1px solid rgba(216, 167, 45, 0.34);
-  background: linear-gradient(160deg, rgba(216, 167, 45, 0.12), rgba(5, 11, 19, 0.95));
-  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.025) inset;
+  border: 1px solid rgba(139, 108, 236, 0.36);
+  background: linear-gradient(160deg, rgba(139, 108, 236, 0.16), rgba(11, 6, 24, 0.96));
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
 .portrait-frame::before {
@@ -111,7 +111,7 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(90deg, rgba(216, 167, 45, 0.08), transparent 38%);
+  background: linear-gradient(90deg, rgba(139, 108, 236, 0.12), transparent 40%);
 }
 
 .portrait-frame::after {
@@ -120,7 +120,7 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(to top, rgba(5, 11, 19, 0.9) 0%, rgba(5, 11, 19, 0.02) 54%);
+  background: linear-gradient(to top, rgba(8, 4, 18, 0.92) 0%, rgba(8, 4, 18, 0.02) 55%);
 }
 
 .orbit-slow {
