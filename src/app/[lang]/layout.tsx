@@ -25,7 +25,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#050b13",
+  themeColor: "#21104c",
 };
 
 export function generateStaticParams(): { lang: Locale }[] {
@@ -44,7 +44,7 @@ export async function generateMetadata({
   return {
     title: dict.meta.title,
     description: dict.meta.description,
-    applicationName: "PROF HARTI Academy",
+    applicationName: "PROF BERRADA Academy",
     manifest: "/manifest.webmanifest",
     icons: {
       icon: [
@@ -56,7 +56,7 @@ export async function generateMetadata({
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
-      title: "PROF HARTI Academy",
+      title: "PROF BERRADA Academy",
     },
     alternates: {
       languages: {
