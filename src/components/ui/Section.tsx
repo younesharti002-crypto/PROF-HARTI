@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
-export const INSTAGRAM_URL = "https://instagram.com/prof_harti";
+export const INSTAGRAM_URL = "https://instagram.com/prof.berrada";
 
 /**
- * Portrait of Prof Harti used across the public experience.
- * The real WebP is extracted from the approved source image before dev/build and served directly in production.
+ * Legacy portrait constant kept for compatibility with existing authenticated screens.
+ * The Prof Berrada public demo uses its own branded visual treatment instead of this asset.
  */
 export const PORTRAIT_SRC = "/images/prof-harti-portrait-final.webp";
 
