@@ -170,15 +170,25 @@ export function LoginForm({ locale }: { locale: Locale }) {
   }
 
   if (user) {
-    const destination = user.role === "ADMIN" ? `/${locale}/admin/academic` : `/${locale}/dashboard`;
+    const destination =
+      user.role === "ADMIN"
+        ? `/${locale}/admin/academic`
+        : user.role === "TEACHER"
+          ? `/${locale}/studio`
+          : `/${locale}/dashboard`;
+
     const destinationLabel =
       user.role === "ADMIN"
         ? locale === "ar"
           ? "فتح لوحة الإدارة"
           : "Ouvrir l’administration"
-        : locale === "ar"
-          ? "فتح مساحة التلميذ"
-          : "Ouvrir l’espace élève";
+        : user.role === "TEACHER"
+          ? locale === "ar"
+            ? "فتح مساحة الأستاذ"
+            : "Ouvrir l’espace professeur"
+          : locale === "ar"
+            ? "فتح مساحة التلميذ"
+            : "Ouvrir l’espace élève";
 
     return (
       <div className="rounded-3xl border border-white/10 bg-board-800/70 p-6 shadow-2xl shadow-black/20 sm:p-8">
