@@ -1,10 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { authenticateWithPhoneAndPassword } from "@/lib/auth/login";
 import {
   createSessionForUser,
   getSessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth/session";
+import {
+  authorizeOrEnrollStudentDevice,
+  getStudentDeviceCookieOptions,
+  STUDENT_DEVICE_COOKIE_NAME,
+} from "@/lib/auth/student-device";
 
 const JSON_HEADERS = {
   "Cache-Control": "no-store",
@@ -34,7 +39,7 @@ function errorResponse(
   );
 }
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   let body: LoginBody;
 
   try {
@@ -65,6 +70,25 @@ export async function POST(request: Request): Promise<NextResponse> {
       return errorResponse(401, "INVALID_CREDENTIALS", "Invalid phone or password.");
     }
 
+    let deviceTokenToSet: string | null = null;
+    if (result.user.role === "STUDENT") {
+      const device = await authorizeOrEnrollStudentDevice(
+        result.user.id,
+        request.cookies.get(STUDENT_DEVICE_COOKIE_NAME)?.value,
+        request.headers.get("user-agent"),
+      );
+
+      if (!device.ok) {
+        return errorResponse(
+          403,
+          "DEVICE_NOT_AUTHORIZED",
+          "هذا الحساب مرتبط بجهاز آخر. تواصل مع الإدارة لإعادة تعيين الجهاز.",
+        );
+      }
+
+      deviceTokenToSet = device.token;
+    }
+
     const session = await createSessionForUser(result.user.id);
 
     const response = NextResponse.json(
@@ -88,6 +112,14 @@ export async function POST(request: Request): Promise<NextResponse> {
       session.token,
       getSessionCookieOptions(session.expiresAt),
     );
+
+    if (deviceTokenToSet) {
+      response.cookies.set(
+        STUDENT_DEVICE_COOKIE_NAME,
+        deviceTokenToSet,
+        getStudentDeviceCookieOptions(),
+      );
+    }
 
     return response;
   } catch (error) {
