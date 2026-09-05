@@ -26,6 +26,12 @@ export default async function AcademicAdminPage({
     <div className="relative">
       <div className="fixed right-4 top-4 z-50 flex gap-2" dir={locale === "ar" ? "rtl" : "ltr"}>
         <Link
+          href={`/${locale}/admin/students`}
+          className="rounded-full border border-orange-400/30 bg-orange-400/10 px-4 py-2 text-sm font-bold text-orange-100 shadow-lg backdrop-blur transition hover:bg-orange-400/20"
+        >
+          {locale === "ar" ? "إدارة التلاميذ" : "Gestion des élèves"}
+        </Link>
+        <Link
           href={`/${locale}/admin/security`}
           className="rounded-full border border-white/15 bg-board-900/90 px-4 py-2 text-sm font-semibold text-chalk shadow-lg backdrop-blur transition hover:bg-white/10"
         >
@@ -35,7 +41,7 @@ export default async function AcademicAdminPage({
           href={`/${locale}/studio`}
           className="rounded-full bg-accent px-4 py-2 text-sm font-bold text-board-900 shadow-lg transition-opacity hover:opacity-90"
         >
-          {locale === "ar" ? "Content Studio" : "Content Studio"}
+          Content Studio
         </Link>
       </div>
       <AcademicAdminClient lang={locale} />
