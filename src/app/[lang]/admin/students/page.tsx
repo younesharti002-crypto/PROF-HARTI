@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { AcademicAdminClient } from "@/components/academic-admin-client";
-import {
-  getAuthenticatedSession,
-  SESSION_COOKIE_NAME,
-} from "@/lib/auth/session";
+import { StudentsAdminClient } from "@/components/admin/StudentsAdminClient";
+import { getAuthenticatedSession, SESSION_COOKIE_NAME } from "@/lib/auth/session";
 
-export default async function AcademicAdminPage({
+export default async function AdminStudentsPage({
   params,
 }: {
   params: Promise<{ lang: string }>;
@@ -24,18 +21,21 @@ export default async function AcademicAdminPage({
 
   return (
     <div className="relative">
-      <div className="fixed right-4 top-4 z-50 flex gap-2" dir={locale === "ar" ? "rtl" : "ltr"}>
+      <div
+        className="fixed right-4 top-4 z-50 hidden gap-2 lg:flex"
+        dir={locale === "ar" ? "rtl" : "ltr"}
+      >
         <Link
-          href={`/${locale}/admin/students`}
-          className="rounded-full border border-orange-400/30 bg-orange-400/10 px-4 py-2 text-sm font-bold text-orange-100 shadow-lg backdrop-blur transition hover:bg-orange-400/20"
+          href={`/${locale}/admin/academic`}
+          className="rounded-full border border-white/15 bg-board-900/90 px-4 py-2 text-sm font-semibold text-chalk shadow-lg backdrop-blur transition hover:bg-white/10"
         >
-          {locale === "ar" ? "إدارة التلاميذ" : "Gestion des élèves"}
+          {locale === "ar" ? "الإدارة الأكاديمية" : "Administration académique"}
         </Link>
         <Link
           href={`/${locale}/admin/security`}
           className="rounded-full border border-white/15 bg-board-900/90 px-4 py-2 text-sm font-semibold text-chalk shadow-lg backdrop-blur transition hover:bg-white/10"
         >
-          {locale === "ar" ? "الأمان وكلمات السر" : "Sécurité & mots de passe"}
+          {locale === "ar" ? "الأمان" : "Sécurité"}
         </Link>
         <Link
           href={`/${locale}/studio`}
@@ -44,7 +44,7 @@ export default async function AcademicAdminPage({
           Content Studio
         </Link>
       </div>
-      <AcademicAdminClient lang={locale} />
+      <StudentsAdminClient lang={locale} />
     </div>
   );
 }
