@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Level = { id: string; name: string };
 type Stream = { id: string; name: string; levelId: string };
@@ -13,6 +13,13 @@ type Subscription = {
   status: "PENDING" | "ACTIVE" | "EXPIRED" | "SUSPENDED";
   startsAt: string | null;
   endsAt: string | null;
+};
+type DeviceInfo = {
+  studentProfileId: string;
+  deviceBound: boolean;
+  userAgent: string | null;
+  firstSeenAt: string | null;
+  lastSeenAt: string | null;
 };
 type Student = {
   id: string;
@@ -30,6 +37,7 @@ type Student = {
   currentSubscription: Subscription | null;
   subscriptions: Subscription[];
   progress: { totalLessons: number; startedLessons: number; completedLessons: number; percent: number };
+  device?: DeviceInfo;
 };
 type Snapshot = { students: Student[]; levels: Level[]; streams: Stream[]; groups: Group[]; offers: Offer[] };
 type FormState = {
@@ -44,7 +52,6 @@ type FormState = {
   offerId: string;
   subscriptionStatus: "ACTIVE" | "PENDING";
 };
-
 type Credential = { fullName: string; phone: string; password: string };
 
 const EMPTY: Snapshot = { students: [], levels: [], streams: [], groups: [], offers: [] };
@@ -64,6 +71,7 @@ const EMPTY_FORM: FormState = {
 const inputClass = "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none transition focus:border-orange-400/70";
 const secondaryButton = "rounded-xl border border-white/15 px-3 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/5 disabled:opacity-40";
 const primaryButton = "rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-black text-white transition hover:bg-orange-400 disabled:opacity-40";
+const dangerButton = "rounded-xl border border-red-400/25 bg-red-400/10 px-3 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-400/20 disabled:opacity-40";
 
 async function api(url: string, init?: RequestInit) {
   const response = await fetch(url, { credentials: "include", ...init });
@@ -138,6 +146,21 @@ function sameDay(value: string | null, now: Date) {
   return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
 }
 
+function credentialMessage(credential: Credential, rtl: boolean) {
+  return rtl
+    ? `السلام عليكم ${credential.fullName}\nحسابك في PROF HARTI Academy تفعل بنجاح.\nالرابط: https://prof-harti.vercel.app/ar/login\nWhatsApp: ${credential.phone}\nكلمة السر: ${credential.password}\nملاحظة: أول جهاز تدخل منه غادي يتسجل كجهاز معتمد للحساب.`
+    : `Bonjour ${credential.fullName},\nVotre compte PROF HARTI Academy est activé.\nLien : https://prof-harti.vercel.app/fr/login\nWhatsApp : ${credential.phone}\nMot de passe : ${credential.password}\nNote : le premier appareil utilisé sera enregistré comme appareil autorisé.`;
+}
+
+function userAgentLabel(userAgent: string | null) {
+  if (!userAgent) return "—";
+  if (/android/i.test(userAgent)) return "Android";
+  if (/iphone|ipad|ios/i.test(userAgent)) return "iPhone / iPad";
+  if (/windows/i.test(userAgent)) return "Windows";
+  if (/macintosh|mac os/i.test(userAgent)) return "Mac";
+  return "Browser";
+}
+
 export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
   const rtl = lang === "ar";
   const [data, setData] = useState<Snapshot>(EMPTY);
@@ -156,8 +179,17 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const payload = await api("/api/v1/admin/students");
-      setData(payload.data as Snapshot);
+      const [studentPayload, devicePayload] = await Promise.all([
+        api("/api/v1/admin/students"),
+        api("/api/v1/admin/student-devices"),
+      ]);
+      const snapshot = studentPayload.data as Snapshot;
+      const devices = (devicePayload.data?.students ?? []) as DeviceInfo[];
+      const deviceMap = new Map(devices.map((device) => [device.studentProfileId, device]));
+      setData({
+        ...snapshot,
+        students: snapshot.students.map((student) => ({ ...student, device: deviceMap.get(student.id) })),
+      });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Load failed");
     } finally {
@@ -201,6 +233,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
     activeAccounts: data.students.filter((student) => student.status === "ACTIVE").length,
     activeSubscriptions: data.students.filter((student) => student.currentSubscription?.status === "ACTIVE").length,
     loggedToday: data.students.filter((student) => sameDay(student.lastLoginAt, now)).length,
+    boundDevices: data.students.filter((student) => student.device?.deviceBound).length,
   };
 
   function resetForm() {
@@ -257,7 +290,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
           }),
         });
         setCredentials((current) => [...current, { fullName: form.fullName, phone: form.phone, password: form.password }]);
-        setMessage(rtl ? "تم إنشاء حساب التلميذ بنجاح." : "Compte élève créé.");
+        setMessage(rtl ? "تم إنشاء حساب التلميذ. بيانات الدخول جاهزة للإرسال." : "Compte élève créé. Les accès sont prêts à envoyer.");
       }
       resetForm();
       await refresh();
@@ -270,6 +303,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
 
   async function toggleAccount(student: Student) {
     setBusy(true);
+    setMessage("");
     try {
       await api(`/api/v1/admin/students/${student.id}`, {
         method: "PATCH",
@@ -292,6 +326,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
       return;
     }
     setBusy(true);
+    setMessage("");
     try {
       await api("/api/v1/admin/users/password", {
         method: "POST",
@@ -299,7 +334,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
         body: JSON.stringify({ userId: student.userId, newPassword: password }),
       });
       setCredentials((current) => [...current, { fullName: student.fullName, phone: student.phone, password }]);
-      setMessage(rtl ? "تم تغيير كلمة السر وإغلاق الجلسات القديمة." : "Mot de passe modifié et anciennes sessions fermées.");
+      setMessage(rtl ? "تم تغيير كلمة السر وإغلاق الجلسات القديمة. بيانات الدخول الجديدة جاهزة للإرسال." : "Mot de passe modifié, sessions révoquées et nouveaux accès prêts à envoyer.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Operation failed");
     } finally {
@@ -320,7 +355,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
           body: JSON.stringify({ status: next }),
         });
       } else {
-        if (data.offers.length === 0) throw new Error(rtl ? "خاص إنشاء Offer نشط أولاً." : "Créez d’abord une offre active.");
+        if (data.offers.length === 0) throw new Error(rtl ? "خاص إنشاء عرض نشط أولاً." : "Créez d’abord une offre active.");
         const defaultOffer = data.offers[0];
         let offer = defaultOffer;
         if (data.offers.length > 1) {
@@ -345,9 +380,67 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
     }
   }
 
+  async function resetDevice(student: Student) {
+    const confirmed = window.confirm(
+      rtl
+        ? `واش متأكد بغيت تحيد الجهاز المسجل لـ ${student.fullName}؟ غادي يتسد الدخول الحالي، وأول جهاز يدخل من بعد غادي يتسجل.`
+        : `Réinitialiser l’appareil de ${student.fullName} ? Les sessions actuelles seront fermées et le prochain appareil sera enregistré.`,
+    );
+    if (!confirmed) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      await api(`/api/v1/admin/students/${student.id}/device`, { method: "DELETE" });
+      setMessage(rtl ? "تم Reset للجهاز. التلميذ يقدر يسجل جهاز جديد في الدخول المقبل." : "Appareil réinitialisé. Le prochain appareil pourra être enregistré.");
+      await refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Device reset failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteStudent(student: Student) {
+    const confirmed = window.confirm(
+      rtl
+        ? `حذف ${student.fullName} نهائياً؟ غادي يتحذف الحساب والاشتراكات والتقدم والجلسات والجهاز المرتبط به.`
+        : `Supprimer définitivement ${student.fullName} ? Le compte et ses données liées seront supprimés.`,
+    );
+    if (!confirmed) return;
+    const second = window.confirm(rtl ? "تأكيد أخير: هاد العملية نهائية." : "Dernière confirmation : cette action est définitive.");
+    if (!second) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      await api(`/api/v1/admin/students/${student.id}`, { method: "DELETE" });
+      setCredentials((current) => current.filter((item) => item.phone !== student.phone));
+      setMessage(rtl ? "تم حذف التلميذ نهائياً." : "Élève supprimé définitivement.");
+      await refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Delete failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copyCredential(credential: Credential) {
+    try {
+      await navigator.clipboard.writeText(credentialMessage(credential, rtl));
+      setMessage(rtl ? `تم نسخ رسالة الدخول ديال ${credential.fullName}.` : `Message d’accès de ${credential.fullName} copié.`);
+    } catch {
+      setMessage(rtl ? "المتصفح منع النسخ التلقائي." : "Le navigateur a bloqué la copie automatique.");
+    }
+  }
+
+  function openWhatsApp(credential: Credential) {
+    const phone = credential.phone.replace(/\D/g, "");
+    const text = encodeURIComponent(credentialMessage(credential, rtl));
+    window.open(`https://wa.me/${phone}?text=${text}`, "_blank", "noopener,noreferrer");
+  }
+
   function exportStudents() {
     downloadCsv("prof-harti-eleves.csv", [
-      ["fullName", "phone", "studentCode", "level", "stream", "group", "accountStatus", "subscriptionStatus", "progressPercent", "lastLoginAt"],
+      ["fullName", "phone", "studentCode", "level", "stream", "group", "accountStatus", "subscriptionStatus", "deviceBound", "progressPercent", "lastLoginAt"],
       ...filtered.map((student) => [
         student.fullName,
         student.phone,
@@ -357,6 +450,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
         student.primaryGroupId ? names.group.get(student.primaryGroupId) ?? "" : "",
         student.status,
         student.currentSubscription?.status ?? "NONE",
+        student.device?.deviceBound ? "YES" : "NO",
         String(student.progress.percent),
         student.lastLoginAt ?? "",
       ]),
@@ -458,13 +552,13 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
 
   return (
     <main dir={rtl ? "rtl" : "ltr"} className="min-h-screen bg-[#071d23] px-4 py-8 text-white sm:px-6 lg:px-10">
-      <div className="mx-auto max-w-[1500px]">
+      <div className="mx-auto max-w-[1600px]">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-sm font-black uppercase tracking-[0.2em] text-orange-400">PROF HARTI · ADMIN</p>
             <h1 className="text-3xl font-black sm:text-4xl">{rtl ? "إدارة التلاميذ" : "Gestion des élèves"}</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
-              {rtl ? "الأستاذ يقدر يزيد التلاميذ، يفعل أو يوقف الحساب والاشتراك، يبدل كلمة السر ويتابع التقدم من بلاصة وحدة." : "Ajoutez les élèves, gérez leurs accès et abonnements, réinitialisez les mots de passe et suivez leur progression."}
+              {rtl ? "إضافة وتعديل التلاميذ، الاشتراكات، كلمات السر، الأجهزة، التقدم والاستيراد الجماعي من نفس الصفحة." : "Gérez les élèves, abonnements, mots de passe, appareils, progression et imports depuis une seule page."}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -477,17 +571,35 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
         </div>
 
         {message && <div className="mb-6 rounded-2xl border border-orange-400/25 bg-orange-400/10 px-4 py-3 text-sm text-orange-100">{message}</div>}
+
         {credentials.length > 0 && (
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm">
-            <span>{rtl ? `عندك ${credentials.length} بيانات دخول جديدة جاهزة للإرسال.` : `${credentials.length} identifiant(s) récent(s) prêt(s) à envoyer.`}</span>
-            <button onClick={downloadCredentials} className={secondaryButton}>{rtl ? "تحميل بيانات الدخول" : "Télécharger les accès"}</button>
-          </div>
+          <section className="mb-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/[0.07] p-4 sm:p-5">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="font-black text-emerald-100">{rtl ? "بيانات الدخول الجاهزة للإرسال" : "Accès prêts à envoyer"}</h2>
+                <p className="mt-1 text-xs text-white/55">{rtl ? "كلمات السر كتبان غير هنا مباشرة بعد الإنشاء أو Reset." : "Les mots de passe ne sont visibles ici qu’après création ou réinitialisation."}</p>
+              </div>
+              <button onClick={downloadCredentials} className={secondaryButton}>{rtl ? "تحميل CSV" : "Télécharger CSV"}</button>
+            </div>
+            <div className="grid gap-2 lg:grid-cols-2">
+              {credentials.slice().reverse().map((credential, index) => (
+                <div key={`${credential.phone}-${index}`} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/10 px-3 py-3">
+                  <div><p className="font-bold">{credential.fullName}</p><p className="text-xs text-white/55">{credential.phone} · ••••••••</p></div>
+                  <div className="flex gap-2">
+                    <button onClick={() => void copyCredential(credential)} className={secondaryButton}>{rtl ? "نسخ الرسالة" : "Copier"}</button>
+                    <button onClick={() => openWhatsApp(credential)} className={primaryButton}>WhatsApp</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
-        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <Stat label={rtl ? "مجموع التلاميذ" : "Total élèves"} value={stats.total} />
           <Stat label={rtl ? "الحسابات المفعلة" : "Comptes actifs"} value={stats.activeAccounts} />
           <Stat label={rtl ? "الاشتراكات النشطة" : "Abonnements actifs"} value={stats.activeSubscriptions} />
+          <Stat label={rtl ? "الأجهزة المسجلة" : "Appareils liés"} value={stats.boundDevices} />
           <Stat label={rtl ? "دخلو اليوم" : "Connectés aujourd’hui"} value={stats.loggedToday} />
         </div>
 
@@ -499,7 +611,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
           <form onSubmit={submitStudent} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Field label={rtl ? "الاسم الكامل" : "Nom complet"}><input required className={inputClass} value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></Field>
             <Field label="WhatsApp"><input required className={inputClass} placeholder="06XXXXXXXX" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
-            {!editing && <Field label={rtl ? "كلمة السر" : "Mot de passe"}><input required minLength={8} className={inputClass} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></Field>}
+            {!editing && <Field label={rtl ? "كلمة السر" : "Mot de passe"}><input required minLength={8} type="password" className={inputClass} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></Field>}
             <Field label={rtl ? "كود التلميذ (اختياري)" : "Code élève (optionnel)"}><input className={inputClass} placeholder="Auto" value={form.studentCode} onChange={(e) => setForm({ ...form, studentCode: e.target.value })} /></Field>
             <Field label={rtl ? "المستوى" : "Niveau"}><select required className={inputClass} value={form.levelId} onChange={(e) => setForm({ ...form, levelId: e.target.value, streamId: "", primaryGroupId: "" })}><option value="">—</option>{data.levels.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></Field>
             <Field label={rtl ? "الشعبة" : "Filière"}><select className={inputClass} value={form.streamId} onChange={(e) => setForm({ ...form, streamId: e.target.value, primaryGroupId: "" })}><option value="">{rtl ? "بدون شعبة" : "Sans filière"}</option>{visibleStreams.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></Field>
@@ -508,7 +620,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
             {!editing && <Field label={rtl ? "العرض / الاشتراك" : "Offre / abonnement"}><select className={inputClass} value={form.offerId} onChange={(e) => setForm({ ...form, offerId: e.target.value })}><option value="">{rtl ? "إنشاء الحساب بلا اشتراك" : "Créer sans abonnement"}</option>{data.offers.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></Field>}
             <button disabled={busy} className={`${primaryButton} md:col-span-2 xl:col-span-4`}>{editing ? (rtl ? "حفظ التعديلات" : "Enregistrer") : (rtl ? "إنشاء حساب التلميذ" : "Créer le compte élève")}</button>
           </form>
-          <p className="mt-3 text-xs text-white/40">{rtl ? "الاستيراد الجماعي كيدعم CSV المتوافق مع Excel. إلا كانت كلمة السر فارغة كيتم توليدها أوتوماتيكياً وكتقدر تحمل بيانات الدخول بعد الاستيراد." : "L’import en masse utilise un CSV compatible Excel. Si le mot de passe est vide, il est généré automatiquement et exportable après l’import."}</p>
+          <p className="mt-3 text-xs text-white/40">{rtl ? "الاستيراد الجماعي كيدعم CSV المتوافق مع Excel. إلا كانت كلمة السر فارغة كيتم توليدها أوتوماتيكياً." : "L’import en masse utilise un CSV compatible Excel. Un mot de passe est généré si la cellule est vide."}</p>
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-4 sm:p-5">
@@ -521,17 +633,25 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
 
           {loading ? <div className="p-8 text-center text-white/50">{rtl ? "جاري تحميل التلاميذ…" : "Chargement…"}</div> : filtered.length === 0 ? <div className="p-8 text-center text-white/45">{rtl ? "ما كاين حتى تلميذ بهاد الفلتر." : "Aucun élève avec ces filtres."}</div> : (
             <div className="overflow-x-auto">
-              <table className="min-w-[1180px] w-full text-sm">
-                <thead className="text-xs uppercase tracking-wide text-white/45"><tr><th className="px-3 py-3 text-start">{rtl ? "التلميذ" : "Élève"}</th><th className="px-3 py-3 text-start">{rtl ? "المستوى" : "Niveau"}</th><th className="px-3 py-3 text-start">{rtl ? "الحساب" : "Compte"}</th><th className="px-3 py-3 text-start">{rtl ? "الاشتراك" : "Abonnement"}</th><th className="px-3 py-3 text-start">{rtl ? "التقدم" : "Progression"}</th><th className="px-3 py-3 text-start">{rtl ? "آخر دخول" : "Dernière connexion"}</th><th className="px-3 py-3 text-start">{rtl ? "العمليات" : "Actions"}</th></tr></thead>
+              <table className="min-w-[1450px] w-full text-sm">
+                <thead className="text-xs uppercase tracking-wide text-white/45"><tr><th className="px-3 py-3 text-start">{rtl ? "التلميذ" : "Élève"}</th><th className="px-3 py-3 text-start">{rtl ? "المستوى" : "Niveau"}</th><th className="px-3 py-3 text-start">{rtl ? "الحساب" : "Compte"}</th><th className="px-3 py-3 text-start">{rtl ? "الاشتراك" : "Abonnement"}</th><th className="px-3 py-3 text-start">{rtl ? "الجهاز" : "Appareil"}</th><th className="px-3 py-3 text-start">{rtl ? "التقدم" : "Progression"}</th><th className="px-3 py-3 text-start">{rtl ? "آخر دخول" : "Dernière connexion"}</th><th className="px-3 py-3 text-start">{rtl ? "العمليات" : "Actions"}</th></tr></thead>
                 <tbody>{filtered.map((student) => (
                   <tr key={student.id} className="border-t border-white/8 align-top">
                     <td className="px-3 py-4"><p className="font-black">{student.fullName}</p><p className="mt-1 text-xs text-white/50">{student.phone} · {student.studentCode}</p></td>
                     <td className="px-3 py-4"><p>{names.level.get(student.levelId)}</p><p className="text-xs text-white/45">{student.streamId ? names.stream.get(student.streamId) : "—"}{student.primaryGroupId ? ` · ${names.group.get(student.primaryGroupId)}` : ""}</p></td>
                     <td className="px-3 py-4"><Badge value={student.status} /></td>
                     <td className="px-3 py-4"><Badge value={student.currentSubscription?.status ?? "NONE"} /><p className="mt-1 max-w-40 truncate text-xs text-white/45">{student.currentSubscription?.offerName ?? "—"}</p></td>
+                    <td className="px-3 py-4"><Badge value={student.device?.deviceBound ? "BOUND" : "UNBOUND"} /><p className="mt-1 text-xs text-white/45">{student.device?.deviceBound ? userAgentLabel(student.device.userAgent) : (rtl ? "لم يسجل جهاز بعد" : "Aucun appareil")}</p></td>
                     <td className="px-3 py-4"><div className="w-36"><div className="mb-1 flex justify-between text-xs"><span>{student.progress.completedLessons}/{student.progress.totalLessons}</span><strong>{student.progress.percent}%</strong></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-orange-500" style={{ width: `${Math.min(100, student.progress.percent)}%` }} /></div></div></td>
                     <td className="px-3 py-4 text-xs text-white/60">{student.lastLoginAt ? new Date(student.lastLoginAt).toLocaleString(lang === "fr" ? "fr-FR" : "ar-MA") : (rtl ? "لم يدخل بعد" : "Jamais")}</td>
-                    <td className="px-3 py-4"><div className="flex flex-wrap gap-2"><button disabled={busy} onClick={() => editStudent(student)} className={secondaryButton}>{rtl ? "تعديل" : "Modifier"}</button><button disabled={busy} onClick={() => void toggleAccount(student)} className={secondaryButton}>{student.status === "ACTIVE" ? (rtl ? "توقيف الحساب" : "Désactiver") : (rtl ? "تفعيل الحساب" : "Activer")}</button><button disabled={busy} onClick={() => void toggleSubscription(student)} className={secondaryButton}>{student.currentSubscription?.status === "ACTIVE" ? (rtl ? "توقيف الاشتراك" : "Suspendre") : (rtl ? "تفعيل الاشتراك" : "Activer abonnement")}</button><button disabled={busy} onClick={() => void resetPassword(student)} className={secondaryButton}>{rtl ? "كلمة السر" : "Mot de passe"}</button></div></td>
+                    <td className="px-3 py-4"><div className="flex max-w-[430px] flex-wrap gap-2">
+                      <button disabled={busy} onClick={() => editStudent(student)} className={secondaryButton}>{rtl ? "تعديل" : "Modifier"}</button>
+                      <button disabled={busy} onClick={() => void toggleAccount(student)} className={secondaryButton}>{student.status === "ACTIVE" ? (rtl ? "توقيف الحساب" : "Désactiver") : (rtl ? "تفعيل الحساب" : "Activer")}</button>
+                      <button disabled={busy} onClick={() => void toggleSubscription(student)} className={secondaryButton}>{student.currentSubscription?.status === "ACTIVE" ? (rtl ? "توقيف الاشتراك" : "Suspendre") : (rtl ? "تفعيل الاشتراك" : "Activer abonnement")}</button>
+                      <button disabled={busy} onClick={() => void resetPassword(student)} className={secondaryButton}>{rtl ? "كلمة السر" : "Mot de passe"}</button>
+                      <button disabled={busy || !student.device?.deviceBound} onClick={() => void resetDevice(student)} className={secondaryButton}>{rtl ? "Reset الجهاز" : "Reset appareil"}</button>
+                      <button disabled={busy} onClick={() => void deleteStudent(student)} className={dangerButton}>{rtl ? "حذف" : "Supprimer"}</button>
+                    </div></td>
                   </tr>
                 ))}</tbody>
               </table>
@@ -543,7 +663,7 @@ export function StudentsAdminClient({ lang }: { lang: "ar" | "fr" }) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return <label className="block"><span className="mb-1.5 block text-xs font-bold uppercase tracking-[0.12em] text-white/50">{label}</span>{children}</label>;
 }
 
@@ -552,7 +672,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 }
 
 function Badge({ value }: { value: string }) {
-  const active = value === "ACTIVE";
+  const active = value === "ACTIVE" || value === "BOUND";
   const warn = value === "PENDING" || value === "SUSPENDED";
   return <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${active ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200" : warn ? "border-orange-400/30 bg-orange-400/10 text-orange-200" : "border-white/15 bg-white/5 text-white/55"}`}>{value}</span>;
 }
