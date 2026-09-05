@@ -15,9 +15,11 @@ export default async function AdminStudentsPage({
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   const session = token ? await getAuthenticatedSession(token) : null;
 
-  if (!session || session.user.role !== "ADMIN") {
+  if (!session || !["ADMIN", "TEACHER"].includes(session.user.role)) {
     redirect(`/${locale}/login`);
   }
+
+  const isAdmin = session.user.role === "ADMIN";
 
   return (
     <div className="relative">
@@ -31,23 +33,27 @@ export default async function AdminStudentsPage({
         >
           {locale === "ar" ? "أجهزة التلاميذ" : "Appareils élèves"}
         </Link>
-        <Link
-          href={`/${locale}/admin/academic`}
-          className="rounded-full border border-white/15 bg-board-900/90 px-4 py-2 text-sm font-semibold text-chalk shadow-lg backdrop-blur transition hover:bg-white/10"
-        >
-          {locale === "ar" ? "الإدارة الأكاديمية" : "Administration académique"}
-        </Link>
-        <Link
-          href={`/${locale}/admin/security`}
-          className="rounded-full border border-white/15 bg-board-900/90 px-4 py-2 text-sm font-semibold text-chalk shadow-lg backdrop-blur transition hover:bg-white/10"
-        >
-          {locale === "ar" ? "الأمان" : "Sécurité"}
-        </Link>
+        {isAdmin ? (
+          <>
+            <Link
+              href={`/${locale}/admin/academic`}
+              className="rounded-full border border-white/15 bg-board-900/90 px-4 py-2 text-sm font-semibold text-chalk shadow-lg backdrop-blur transition hover:bg-white/10"
+            >
+              {locale === "ar" ? "الإدارة الأكاديمية" : "Administration académique"}
+            </Link>
+            <Link
+              href={`/${locale}/admin/security`}
+              className="rounded-full border border-white/15 bg-board-900/90 px-4 py-2 text-sm font-semibold text-chalk shadow-lg backdrop-blur transition hover:bg-white/10"
+            >
+              {locale === "ar" ? "الأمان" : "Sécurité"}
+            </Link>
+          </>
+        ) : null}
         <Link
           href={`/${locale}/studio`}
           className="rounded-full bg-accent px-4 py-2 text-sm font-bold text-board-900 shadow-lg transition-opacity hover:opacity-90"
         >
-          Content Studio
+          Teacher Studio
         </Link>
       </div>
       <StudentsAdminClient lang={locale} />
