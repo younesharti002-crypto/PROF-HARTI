@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AssessmentStudio } from "@/components/assessments/AssessmentStudio";
@@ -10,5 +11,16 @@ export default async function AssessmentStudioPage({ params }: { params: Promise
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   const session = token ? await getAuthenticatedSession(token) : null;
   if (!session || !["ADMIN", "TEACHER"].includes(session.user.role)) redirect(`/${locale}/login`);
-  return <AssessmentStudio lang={locale} />;
+
+  return (
+    <div className="relative">
+      <Link
+        href={`/${locale}/admin/students`}
+        className="fixed bottom-5 right-5 z-[70] rounded-full border border-accent/30 bg-accent px-5 py-3 text-sm font-black text-board-900 shadow-2xl transition hover:scale-[1.02]"
+      >
+        {locale === "ar" ? "إدارة التلاميذ" : "Gestion des élèves"}
+      </Link>
+      <AssessmentStudio lang={locale} />
+    </div>
+  );
 }
