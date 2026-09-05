@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { LiveStudio } from "@/components/live/LiveStudio";
@@ -14,5 +15,15 @@ export default async function LiveStudioPage({ params }: { params: Promise<{ lan
     redirect(`/${locale}/login`);
   }
 
-  return <LiveStudio lang={locale} />;
+  return (
+    <div className="relative">
+      <Link
+        href={`/${locale}/admin/students`}
+        className="fixed bottom-5 right-5 z-[70] rounded-full border border-accent/30 bg-accent px-5 py-3 text-sm font-black text-board-900 shadow-2xl transition hover:scale-[1.02]"
+      >
+        {locale === "ar" ? "إدارة التلاميذ" : "Gestion des élèves"}
+      </Link>
+      <LiveStudio lang={locale} />
+    </div>
+  );
 }

@@ -12,6 +12,39 @@ export type AuthorizationResult =
   | { ok: true; session: AuthenticatedSession }
   | { ok: false; reason: "UNAUTHENTICATED" | "FORBIDDEN" };
 
+function isTeacherStudentManagementRequest(request: NextRequest): boolean {
+  const pathname = request.nextUrl.pathname;
+  const method = request.method.toUpperCase();
+
+  if (method === "GET") {
+    return pathname === "/api/v1/admin/students" || pathname === "/api/v1/admin/student-devices";
+  }
+
+  if (method === "POST") {
+    return (
+      pathname === "/api/v1/admin/students" ||
+      pathname === "/api/v1/admin/subscriptions" ||
+      pathname === "/api/v1/admin/users/password"
+    );
+  }
+
+  if (method === "PATCH") {
+    return (
+      /^\/api\/v1\/admin\/students\/[^/]+$/.test(pathname) ||
+      /^\/api\/v1\/admin\/subscriptions\/[^/]+$/.test(pathname)
+    );
+  }
+
+  if (method === "DELETE") {
+    return (
+      /^\/api\/v1\/admin\/students\/[^/]+$/.test(pathname) ||
+      /^\/api\/v1\/admin\/students\/[^/]+\/device$/.test(pathname)
+    );
+  }
+
+  return false;
+}
+
 export async function authorizeRequest(
   request: NextRequest,
   allowedRoles?: readonly UserRole[],
@@ -28,7 +61,13 @@ export async function authorizeRequest(
     return { ok: false, reason: "UNAUTHENTICATED" };
   }
 
-  if (!isRoleAllowed(session.user.role as AuthRole, allowedRoles)) {
+  const normallyAllowed = isRoleAllowed(session.user.role as AuthRole, allowedRoles);
+  const teacherStudentManagementAllowed =
+    session.user.role === "TEACHER" &&
+    Boolean(allowedRoles?.includes("ADMIN")) &&
+    isTeacherStudentManagementRequest(request);
+
+  if (!normallyAllowed && !teacherStudentManagementAllowed) {
     return { ok: false, reason: "FORBIDDEN" };
   }
 
