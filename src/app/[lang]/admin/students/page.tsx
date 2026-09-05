@@ -26,6 +26,12 @@ export default async function AdminStudentsPage({
         dir={locale === "ar" ? "rtl" : "ltr"}
       >
         <Link
+          href={`/${locale}/admin/devices`}
+          className="rounded-full border border-orange-400/35 bg-orange-400/10 px-4 py-2 text-sm font-semibold text-orange-100 shadow-lg backdrop-blur transition hover:bg-orange-400/15"
+        >
+          {locale === "ar" ? "أجهزة التلاميذ" : "Appareils élèves"}
+        </Link>
+        <Link
           href={`/${locale}/admin/academic`}
           className="rounded-full border border-white/15 bg-board-900/90 px-4 py-2 text-sm font-semibold text-chalk shadow-lg backdrop-blur transition hover:bg-white/10"
         >
