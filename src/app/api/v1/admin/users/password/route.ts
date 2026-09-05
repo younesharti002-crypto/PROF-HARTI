@@ -94,6 +94,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (authorization.session.user.role === "TEACHER" && target.role !== "STUDENT") {
+    return errorResponse(
+      403,
+      "TEACHER_RESET_SCOPE_BLOCKED",
+      "Teachers can reset student passwords only.",
+    );
+  }
+
   const passwordHash = await hashPassword(newPassword);
 
   await db.transaction(async (tx) => {
