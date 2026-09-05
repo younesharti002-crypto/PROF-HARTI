@@ -176,3 +176,48 @@ export async function PATCH(
     return errorResponse(500, "STUDENT_UPDATE_FAILED", "Student update is temporarily unavailable.");
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ studentProfileId: string }> },
+) {
+  const authorization = await authorizeRequest(request, ["ADMIN"]);
+  if (!authorization.ok) {
+    return errorResponse(
+      authorization.reason === "UNAUTHENTICATED" ? 401 : 403,
+      authorization.reason,
+      authorization.reason === "UNAUTHENTICATED" ? "Authentication required." : "Admin access required.",
+    );
+  }
+
+  const { studentProfileId } = await params;
+  if (!UUID_PATTERN.test(studentProfileId)) {
+    return errorResponse(400, "INVALID_STUDENT_ID", "Invalid student profile id.");
+  }
+
+  const current = await loadStudent(studentProfileId);
+  if (!current) return errorResponse(404, "STUDENT_NOT_FOUND", "Student not found.");
+
+  try {
+    const deleted = await db
+      .delete(users)
+      .where(eq(users.id, current.userId))
+      .returning({ id: users.id });
+
+    if (deleted.length === 0) {
+      return errorResponse(404, "STUDENT_NOT_FOUND", "Student not found.");
+    }
+
+    return NextResponse.json(
+      { data: { deleted: true, studentProfileId, userId: current.userId } },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    const pgCode = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";
+    console.error("admin.students.delete.failed", { studentProfileId, pgCode });
+    if (pgCode === "23503") {
+      return errorResponse(409, "STUDENT_HAS_DEPENDENCIES", "Student account still has protected linked records.");
+    }
+    return errorResponse(500, "STUDENT_DELETE_FAILED", "Student deletion is temporarily unavailable.");
+  }
+}
