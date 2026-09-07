@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { PORTRAIT_SRC } from "@/components/ui/Section";
 
@@ -12,15 +11,12 @@ export function Hero({ dict }: { dict: Dictionary }) {
       <div className="premium-hero-grid relative mx-auto grid w-full max-w-[90rem] gap-8 px-5 pb-10 pt-7 sm:px-8 md:pb-14 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-14 lg:px-10 lg:pb-0 lg:pt-0">
         <div className="relative mx-auto w-full max-w-[31rem] self-stretch lg:mx-0 lg:max-w-none">
           <div aria-hidden="true" className="absolute inset-x-[8%] bottom-[5%] top-[12%] rounded-[2rem] bg-accent/10 blur-3xl" />
-          <figure className="portrait-frame relative aspect-[4/5] min-h-[34rem] w-full rounded-b-none border-b-0 lg:min-h-[46rem] lg:rounded-t-none">
-            <Image
+          <figure className="portrait-frame relative aspect-[4/5] min-h-[34rem] w-full overflow-hidden rounded-b-none border-b-0 lg:min-h-[46rem] lg:rounded-t-none">
+            <img
               src={PORTRAIT_SRC}
               alt={dict.hero.imageAlt}
-              fill
-              priority
-              unoptimized
-              sizes="(max-width: 1024px) 90vw, 45vw"
-              className="object-cover object-top"
+              className="absolute inset-0 h-full w-full object-cover object-top"
+              loading="eager"
             />
             <div className="absolute inset-x-0 bottom-0 z-10 p-5 sm:p-7">
               <div className="inline-flex items-center gap-2 rounded-lg border border-accent/30 bg-[#050b13]/80 px-3 py-2 text-xs font-bold text-accent backdrop-blur-xl">
