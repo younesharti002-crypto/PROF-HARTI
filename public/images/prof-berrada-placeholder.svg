@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Prof Berrada Mathematics Academy</title>
+  <desc id="desc">Temporary mathematics visual used until the approved Instagram profile portrait is added.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#06111f"/>
+      <stop offset="1" stop-color="#0f2a4a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <g opacity="0.16" stroke="#7dd3fc" fill="none">
+    <path d="M80 180h640M80 300h640M80 420h640M80 540h640M80 660h640M80 780h640"/>
+    <path d="M160 100v800M280 100v800M400 100v800M520 100v800M640 100v800"/>
+    <circle cx="610" cy="250" r="120"/>
+    <path d="M120 760L360 520 640 780"/>
+  </g>
+  <g fill="#f8fafc" text-anchor="middle" font-family="Arial, Helvetica, sans-serif">
+    <text x="400" y="390" font-size="54" font-weight="700">PROF BERRADA</text>
+    <text x="400" y="465" font-size="34" fill="#7dd3fc">MATHEMATIQUES • COLLEGE</text>
+    <text x="400" y="610" font-size="96" font-weight="700" fill="#fbbf24">∑  π  √</text>
+    <text x="400" y="875" font-size="24" fill="#cbd5e1">Portrait Instagram officiel à intégrer</text>
+  </g>
+</svg>
