@@ -4,8 +4,8 @@ import { Section, SectionHeading } from "@/components/ui/Section";
 export function Positioning({ dict }: { dict: Dictionary }) {
   const { positioning } = dict;
   const columns = [
-    { data: positioning.physics, symbol: "Φ", label: "PHYSICS" },
-    { data: positioning.chemistry, symbol: "⚗", label: "CHEMISTRY" },
+    { data: positioning.physics, symbol: "∑", label: "METHOD" },
+    { data: positioning.chemistry, symbol: "√", label: "PRACTICE" },
   ];
 
   return (
