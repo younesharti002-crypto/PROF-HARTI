@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 
-export const INSTAGRAM_URL = "https://instagram.com/prof_harti";
+export const INSTAGRAM_URL = "https://instagram.com/prof.berrada";
 
 /**
- * Portrait of Prof Harti used across the public experience.
- * The real WebP is extracted from the approved source image before dev/build and served directly in production.
+ * Teacher 002 temporary visual.
+ * Replace with the approved Instagram profile portrait once the binary asset is added.
  */
-export const PORTRAIT_SRC = "/images/prof-harti-portrait-final.webp";
+export const PORTRAIT_SRC = "/images/prof-berrada-placeholder.svg";
 
 export function Section({
   id,
