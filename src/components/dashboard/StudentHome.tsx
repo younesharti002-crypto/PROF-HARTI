@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type LiveSession = {
   id: string;
@@ -12,10 +12,9 @@ type LiveSession = {
   status: "SCHEDULED" | "LIVE" | "COMPLETED";
   replayUrl: string | null;
 };
+
 type AssessmentAttempt = { assessmentId: string; percent: number };
 type AssessmentItem = { id: string };
-
-const navIcon = "grid size-8 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-[13px] text-accent";
 
 export function StudentHome({
   locale,
@@ -59,14 +58,18 @@ export function StudentHome({
     };
   }, []);
 
-  const liveNow = sessions.find((session) => session.status === "LIVE");
-  const scheduled = sessions
-    .filter((session) => session.status === "SCHEDULED")
-    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0];
-  const nextLive = liveNow || scheduled || null;
+  const nextLive = useMemo(() => {
+    const live = sessions.find((session) => session.status === "LIVE");
+    if (live) return live;
+    return sessions
+      .filter((session) => session.status === "SCHEDULED")
+      .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0] || null;
+  }, [sessions]);
+
   const replayCount = sessions.filter(
     (session) => session.status === "COMPLETED" && session.replayUrl,
   ).length;
+
   const bestQuizScore = attempts.length
     ? Math.max(...attempts.map((attempt) => attempt.percent))
     : null;
@@ -79,83 +82,82 @@ export function StudentHome({
 
   const navItems = [
     { href: `/${locale}/dashboard`, icon: "⌂", label: ar ? "الرئيسية" : "Accueil", active: true },
-    { href: `/${locale}/courses`, icon: "▣", label: ar ? "دروسي" : "Mes cours" },
-    { href: `/${locale}/live`, icon: "▶", label: ar ? "التسجيلات" : "Replays" },
-    { href: `/${locale}/assessments`, icon: "✎", label: ar ? "التمارين" : "Exercices" },
-    { href: `/${locale}/assessments`, icon: "▥", label: ar ? "النتائج" : "Résultats" },
+    { href: `/${locale}/courses`, icon: "∑", label: ar ? "دروسي" : "Mes cours" },
+    { href: `/${locale}/live`, icon: "▶", label: ar ? "الحصص والتسجيلات" : "Lives & replays" },
+    { href: `/${locale}/assessments`, icon: "✓", label: ar ? "التمارين والنتائج" : "Exercices & résultats" },
   ];
 
   return (
-    <main
-      className="min-h-screen bg-[#f3f1ec] text-[#111827]"
-      dir={ar ? "rtl" : "ltr"}
-    >
-      <div className="mx-auto min-h-screen max-w-[1560px] lg:grid lg:grid-cols-[250px_minmax(0,1fr)]">
-        <aside className="hidden min-h-screen border-e border-white/10 bg-board-900 px-4 py-6 text-chalk lg:flex lg:flex-col">
-          <Link href={`/${locale}`} className="flex items-center gap-3 px-2">
-            <span className="grid size-11 place-items-center rounded-2xl border border-accent/30 bg-accent/10 text-lg font-black text-accent shadow-[0_0_30px_rgba(209,166,54,0.12)]">
-              PH
-            </span>
+    <main className="min-h-screen bg-[#f4f6fa] text-[#101828]" dir={ar ? "rtl" : "ltr"}>
+      <div className="mx-auto min-h-screen max-w-[1540px] lg:grid lg:grid-cols-[270px_minmax(0,1fr)]">
+        <aside className="hidden min-h-screen bg-[#071426] px-5 py-6 text-white lg:flex lg:flex-col">
+          <Link href={`/${locale}`} className="flex items-center gap-3">
+            <span className="grid size-12 place-items-center rounded-2xl border border-[#d8b35b]/40 bg-[#d8b35b]/10 text-lg font-black text-[#f0cf7a]">MB</span>
             <span>
-              <span className="block text-sm font-extrabold tracking-[0.06em]">PROF HARTI</span>
-              <span className="block text-[9px] font-semibold uppercase tracking-[0.28em] text-accent">Academy</span>
+              <span className="block text-sm font-black tracking-[0.08em]">PROF BERRADA</span>
+              <span className="block text-[9px] font-bold uppercase tracking-[0.28em] text-[#d8b35b]">Math Academy</span>
             </span>
           </Link>
 
-          <nav className="mt-10 space-y-1.5">
+          <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#d8b35b]">Mathématiques • Collège</p>
+            <p className="mt-2 text-sm leading-6 text-white/65">
+              {ar ? "الفهم، المنهجية، ثم التطبيق." : "Comprendre, maîtriser la méthode, puis appliquer."}
+            </p>
+          </div>
+
+          <nav className="mt-7 space-y-2">
             {navItems.map((item) => (
               <Link
-                key={`${item.href}-${item.label}`}
+                key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition ${
+                className={`flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-bold transition ${
                   item.active
-                    ? "bg-gradient-to-r from-accent to-accent-soft text-board-900 shadow-[0_12px_30px_rgba(209,166,54,0.2)]"
-                    : "text-chalk-dim hover:bg-white/[0.06] hover:text-chalk"
+                    ? "bg-[#d8b35b] text-[#071426] shadow-lg shadow-black/15"
+                    : "text-white/70 hover:bg-white/[0.06] hover:text-white"
                 }`}
               >
-                <span className={item.active ? "grid size-8 place-items-center text-sm" : navIcon}>{item.icon}</span>
+                <span className="grid size-8 place-items-center rounded-xl border border-current/15">{item.icon}</span>
                 <span>{item.label}</span>
               </Link>
             ))}
           </nav>
 
-          <div className="mt-auto rounded-3xl border border-accent/15 bg-white/[0.035] p-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-accent">
+          <div className="mt-auto rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#d8b35b]">
               {ar ? "حساب التلميذ" : "Compte élève"}
             </p>
-            <p className="mt-2 truncate text-sm font-bold text-chalk">{studentName}</p>
-            <Link href={`/${locale}`} className="mt-4 inline-flex text-xs font-semibold text-chalk-dim hover:text-accent">
-              {ar ? "العودة للموقع" : "Retour au site"}
+            <p className="mt-2 truncate text-sm font-black">{studentName}</p>
+            <Link href={`/${locale}`} className="mt-4 inline-flex text-xs font-semibold text-white/60 hover:text-[#d8b35b]">
+              {ar ? "العودة إلى موقع Prof Berrada" : "Retour au site Prof Berrada"}
             </Link>
           </div>
         </aside>
 
         <section className="min-w-0">
-          <header className="sticky top-0 z-30 border-b border-black/[0.06] bg-[#f8f7f4]/90 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
+          <header className="sticky top-0 z-30 border-b border-black/[0.06] bg-white/90 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
               <Link href={`/${locale}`} className="flex items-center gap-2 lg:hidden">
-                <span className="grid size-9 place-items-center rounded-xl bg-board-900 text-xs font-black text-accent">PH</span>
-                <span className="text-xs font-black text-board-900">PROF HARTI</span>
+                <span className="grid size-9 place-items-center rounded-xl bg-[#071426] text-xs font-black text-[#d8b35b]">MB</span>
+                <span className="text-xs font-black">PROF BERRADA</span>
               </Link>
-
               <div className="ms-auto flex items-center gap-3">
                 <div className="hidden text-end sm:block">
-                  <p className="text-[11px] text-[#7b7b78]">{ar ? "مرحبا بك" : "Bienvenue"}</p>
-                  <p className="max-w-[180px] truncate text-sm font-bold text-[#111827]">{studentName}</p>
+                  <p className="text-[11px] text-[#7a8190]">{ar ? "مرحبا بك" : "Bienvenue"}</p>
+                  <p className="max-w-[180px] truncate text-sm font-black">{studentName}</p>
                 </div>
-                <div className="grid size-10 place-items-center rounded-full border border-[#dedbd3] bg-white text-sm font-black text-board-900 shadow-sm">
+                <div className="grid size-10 place-items-center rounded-full border border-[#dfe3ea] bg-white text-sm font-black shadow-sm">
                   {studentName.trim().charAt(0).toUpperCase() || "S"}
                 </div>
               </div>
             </div>
-
             <nav className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-              {navItems.slice(0, 4).map((item) => (
+              {navItems.map((item) => (
                 <Link
-                  key={`mobile-${item.label}`}
+                  key={`mobile-${item.href}`}
                   href={item.href}
                   className={`whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-bold ${
-                    item.active ? "bg-board-900 text-accent" : "border border-[#dedbd3] bg-white text-[#555]"
+                    item.active ? "bg-[#071426] text-[#f0cf7a]" : "border border-[#dfe3ea] bg-white text-[#566070]"
                   }`}
                 >
                   {item.label}
@@ -164,156 +166,101 @@ export function StudentHome({
             </nav>
           </header>
 
-          <div className="space-y-5 p-4 sm:p-6 lg:p-8">
-            <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-              <div>
-                <p className="text-sm font-medium text-[#77736b]">{ar ? "👋 مرحبا" : "👋 Bonjour"}</p>
-                <h1 className="mt-1 text-2xl font-black tracking-tight text-[#111827] sm:text-3xl">
-                  {studentName}
-                </h1>
-                <p className="mt-2 text-sm text-[#77736b]">
-                  {ar ? "واصل رحلتك نحو التفوق من نفس المكان." : "Continuez votre parcours vers la réussite depuis un seul espace."}
-                </p>
+          <div className="space-y-6 p-4 sm:p-6 lg:p-8">
+            <section className="overflow-hidden rounded-[2rem] bg-[#071426] p-6 text-white shadow-[0_20px_55px_rgba(10,23,45,0.12)] sm:p-8">
+              <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+                <div>
+                  <span className="inline-flex rounded-full border border-[#d8b35b]/35 bg-[#d8b35b]/10 px-3 py-1.5 text-[11px] font-black text-[#f0cf7a]">
+                    {ar ? "فضاء تلميذ Prof Berrada" : "Espace élève Prof Berrada"}
+                  </span>
+                  <p className="mt-5 text-sm text-white/60">{ar ? "مرحبا" : "Bonjour"}</p>
+                  <h1 className="mt-1 text-3xl font-black sm:text-4xl">{studentName}</h1>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">
+                    {ar
+                      ? "كمّل مسارك في الرياضيات: راجع الدروس، طبّق بالتمارين، وتابع تقدمك من مكان واحد."
+                      : "Continue ton parcours en mathématiques : cours, exercices, lives et progression au même endroit."}
+                  </p>
+                </div>
+                <div className="text-start lg:text-end">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d8b35b]">Progress</p>
+                  <p className="mt-1 text-5xl font-black text-[#f0cf7a]">{progressPercent}%</p>
+                  <p className="mt-2 text-xs text-white/55">{progressCompleted} / {progressTotal} {ar ? "درس مكتمل" : "leçons terminées"}</p>
+                </div>
               </div>
-
-              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#e4d7ae] bg-[#fffaf0] px-4 py-2 text-xs font-bold text-[#8a6718]">
-                <span className="size-2 rounded-full bg-accent" />
-                {ar ? "فضاء المشتركين" : "Espace abonnés"}
+              <div className="mt-6 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-[#d8b35b]" style={{ width: `${progressPercent}%` }} />
               </div>
             </section>
 
             <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <article className="rounded-3xl border border-[#e4e1d9] bg-white p-5 shadow-[0_14px_35px_rgba(20,24,32,0.05)]">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold text-[#7b7b78]">{ar ? "تقدمك الدراسي" : "Progression"}</p>
-                    <p className="mt-2 text-3xl font-black text-[#111827]">{progressPercent}%</p>
-                  </div>
-                  <span className="grid size-10 place-items-center rounded-2xl bg-[#fff6dc] text-lg text-[#b98516]">↗</span>
-                </div>
-                <p className="mt-3 text-xs text-[#8c8982]">
-                  {progressCompleted} / {progressTotal} {ar ? "درس مكتمل" : "leçons terminées"}
-                </p>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#eceae5]">
-                  <div className="h-full rounded-full bg-accent" style={{ width: `${progressPercent}%` }} />
-                </div>
-              </article>
-
-              <article className="rounded-3xl border border-[#e4e1d9] bg-white p-5 shadow-[0_14px_35px_rgba(20,24,32,0.05)]">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold text-[#7b7b78]">{ar ? "أفضل نتيجة" : "Meilleur score"}</p>
-                    <p className="mt-2 text-3xl font-black text-[#111827]">{bestQuizScore === null ? "—" : `${bestQuizScore}%`}</p>
-                  </div>
-                  <span className="grid size-10 place-items-center rounded-2xl bg-[#f1edff] text-lg text-[#7556b8]">★</span>
-                </div>
-                <p className="mt-3 text-xs text-[#8c8982]">
-                  {assessments.length} {ar ? "اختبار منشور" : "évaluations"} · {attempts.length} {ar ? "محاولة" : "tentatives"}
-                </p>
-                <Link href={`/${locale}/assessments`} className="mt-4 inline-flex text-xs font-black text-[#9a741d] hover:underline">
-                  {ar ? "عرض التمارين" : "Voir les exercices"}
-                </Link>
-              </article>
-
-              <article className="rounded-3xl border border-[#e4e1d9] bg-white p-5 shadow-[0_14px_35px_rgba(20,24,32,0.05)]">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold text-[#7b7b78]">{ar ? "التسجيلات المتاحة" : "Replays disponibles"}</p>
-                    <p className="mt-2 text-3xl font-black text-[#111827]">{replayCount}</p>
-                  </div>
-                  <span className="grid size-10 place-items-center rounded-2xl bg-[#edf5ff] text-lg text-[#4270a8]">▶</span>
-                </div>
-                <p className="mt-3 text-xs text-[#8c8982]">{ar ? "تسجيلات منشورة داخل اشتراكك" : "Replays publiés dans votre abonnement"}</p>
-                <Link href={`/${locale}/live`} className="mt-4 inline-flex text-xs font-black text-[#9a741d] hover:underline">
-                  {ar ? "فتح التسجيلات" : "Voir les replays"}
-                </Link>
-              </article>
-
-              <article className={`rounded-3xl border bg-white p-5 shadow-[0_14px_35px_rgba(20,24,32,0.05)] ${nextLive?.status === "LIVE" ? "border-[#efb7b7]" : "border-[#e4e1d9]"}`}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className={`text-xs font-black ${nextLive?.status === "LIVE" ? "text-[#c44040]" : "text-[#7b7b78]"}`}>
-                      {nextLive?.status === "LIVE" ? "● LIVE NOW" : ar ? "الحصة القادمة" : "Prochain live"}
-                    </p>
-                    <p className="mt-2 line-clamp-2 text-base font-black text-[#111827]">
-                      {nextLive ? nextLive.title : ar ? "لا توجد حصة مبرمجة" : "Aucun live programmé"}
-                    </p>
-                  </div>
-                  <span className={`grid size-10 place-items-center rounded-2xl text-lg ${nextLive?.status === "LIVE" ? "bg-[#fff0f0] text-[#c44040]" : "bg-[#fff6dc] text-[#b98516]"}`}>◉</span>
-                </div>
-                {nextLive ? (
-                  <p className="mt-3 text-xs leading-5 text-[#8c8982]">
-                    {nextLive.subjectName} · {formatDate(nextLive.scheduledAt)}
-                  </p>
-                ) : null}
-                <Link href={`/${locale}/live`} className="mt-4 inline-flex text-xs font-black text-[#9a741d] hover:underline">
-                  {ar ? "الحصص المباشرة" : "Voir les lives"}
-                </Link>
-              </article>
+              <StatCard label={ar ? "تقدمك الدراسي" : "Progression"} value={`${progressPercent}%`} note={`${progressCompleted}/${progressTotal}`} icon="↗" />
+              <StatCard label={ar ? "أفضل نتيجة" : "Meilleur score"} value={bestQuizScore === null ? "—" : `${bestQuizScore}%`} note={`${attempts.length} ${ar ? "محاولة" : "tentatives"}`} icon="★" />
+              <StatCard label={ar ? "التسجيلات المتاحة" : "Replays"} value={String(replayCount)} note={ar ? "حصص مسجلة" : "séances enregistrées"} icon="▶" />
+              <StatCard label={ar ? "التمارين" : "Exercices"} value={String(assessments.length)} note={ar ? "اختبارات منشورة" : "évaluations publiées"} icon="✓" />
             </section>
 
-            <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-              <div className="rounded-[2rem] border border-[#e4e1d9] bg-white p-5 shadow-[0_14px_35px_rgba(20,24,32,0.05)] sm:p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+            <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+              <article className="rounded-[2rem] border border-[#e1e5ec] bg-white p-5 shadow-sm sm:p-6">
+                <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-bold text-[#9a741d]">{ar ? "مسارك الدراسي" : "Votre parcours"}</p>
-                    <h2 className="mt-1 text-xl font-black text-[#111827]">{ar ? "استمر من حيث توقفت" : "Reprendre votre progression"}</h2>
+                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#a27b28]">{ar ? "الحصة القادمة" : "Prochaine séance"}</p>
+                    <h2 className="mt-2 text-xl font-black">
+                      {nextLive ? nextLive.title : ar ? "لا توجد حصة مبرمجة حالياً" : "Aucune séance programmée"}
+                    </h2>
+                    {nextLive ? (
+                      <p className="mt-3 text-sm text-[#707887]">{nextLive.subjectName} · {formatDate(nextLive.scheduledAt)}</p>
+                    ) : (
+                      <p className="mt-3 text-sm leading-6 text-[#707887]">{ar ? "ملي تتبرمج الحصة غادي تبان هنا مباشرة." : "La prochaine séance apparaîtra ici dès sa programmation."}</p>
+                    )}
                   </div>
-                  <Link href={`/${locale}/courses`} className="rounded-full border border-[#dfd6ba] bg-[#fffaf0] px-4 py-2 text-xs font-black text-[#8a6718]">
-                    {ar ? "فتح دروسي" : "Mes cours"}
-                  </Link>
+                  <span className={`grid size-12 place-items-center rounded-2xl text-lg font-black ${nextLive?.status === "LIVE" ? "bg-red-50 text-red-600" : "bg-[#fff6dc] text-[#a27b28]"}`}>
+                    {nextLive?.status === "LIVE" ? "●" : "∑"}
+                  </span>
                 </div>
+                <Link href={`/${locale}/live`} className="mt-6 inline-flex rounded-xl bg-[#071426] px-4 py-2.5 text-xs font-black text-[#f0cf7a]">
+                  {ar ? "فتح الحصص والتسجيلات" : "Ouvrir les lives et replays"}
+                </Link>
+              </article>
 
-                <div className="mt-6 grid gap-4 sm:grid-cols-[150px_1fr] sm:items-center">
-                  <div className="relative mx-auto grid size-32 place-items-center rounded-full" style={{ background: `conic-gradient(#d1a636 ${progressPercent}%, #eceae5 0)` }}>
-                    <div className="grid size-[104px] place-items-center rounded-full bg-white text-center">
-                      <div>
-                        <p className="text-2xl font-black text-[#111827]">{progressPercent}%</p>
-                        <p className="text-[10px] font-bold text-[#88847c]">{ar ? "منجز" : "terminé"}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#111827]">
-                      {ar ? "كل درس تكمله يرفع تقدمك الحقيقي داخل المنصة." : "Chaque leçon terminée met à jour votre progression réelle."}
-                    </p>
-                    <p className="mt-2 text-xs leading-6 text-[#7d7971]">
-                      {ar
-                        ? `${progressCompleted} من أصل ${progressTotal} درس تم إكمالها حتى الآن.`
-                        : `${progressCompleted} leçons terminées sur ${progressTotal} pour le moment.`}
-                    </p>
-                    <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[#eceae5]">
-                      <div className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft" style={{ width: `${progressPercent}%` }} />
-                    </div>
-                  </div>
+              <article className="rounded-[2rem] border border-[#e1e5ec] bg-white p-5 shadow-sm sm:p-6">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#a27b28]">{ar ? "وصول سريع" : "Accès rapide"}</p>
+                <div className="mt-4 grid gap-3">
+                  <QuickLink href={`/${locale}/courses`} title={ar ? "دروس الرياضيات" : "Cours de mathématiques"} note={ar ? "شرح ومنهجية منظمة" : "Cours et méthode structurés"} symbol="∑" />
+                  <QuickLink href={`/${locale}/assessments`} title={ar ? "التمارين والاختبارات" : "Exercices & quiz"} note={ar ? "طبّق وراجع النتيجة" : "S'entraîner et suivre ses résultats"} symbol="✓" />
+                  <QuickLink href={`/${locale}/live`} title={ar ? "Lives & Replays" : "Lives & Replays"} note={ar ? "تابع الحصص المباشرة والمسجلة" : "Séances en direct et enregistrées"} symbol="▶" />
                 </div>
-              </div>
-
-              <div className="rounded-[2rem] bg-board-900 p-5 text-chalk shadow-[0_18px_45px_rgba(5,16,28,0.18)] sm:p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold text-accent">{ar ? "أدواتك" : "Vos outils"}</p>
-                    <h2 className="mt-1 text-xl font-black">{ar ? "كل ما تحتاجه هنا" : "Tout au même endroit"}</h2>
-                  </div>
-                  <span className="text-2xl text-accent">PH</span>
-                </div>
-
-                <div className="mt-5 grid gap-2.5">
-                  <Link href={`/${locale}/courses`} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 text-sm font-bold transition hover:border-accent/30 hover:bg-white/[0.07]">
-                    <span>{ar ? "دروسي" : "Mes cours"}</span><span className="text-accent">←</span>
-                  </Link>
-                  <Link href={`/${locale}/live`} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 text-sm font-bold transition hover:border-accent/30 hover:bg-white/[0.07]">
-                    <span>{ar ? "Live & Replays" : "Lives & replays"}</span><span className="text-accent">←</span>
-                  </Link>
-                  <Link href={`/${locale}/assessments`} className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 text-sm font-bold transition hover:border-accent/30 hover:bg-white/[0.07]">
-                    <span>{ar ? "التمارين والاختبارات" : "Exercices & quiz"}</span><span className="text-accent">←</span>
-                  </Link>
-                </div>
-              </div>
+              </article>
             </section>
           </div>
         </section>
       </div>
     </main>
+  );
+}
+
+function StatCard({ label, value, note, icon }: { label: string; value: string; note: string; icon: string }) {
+  return (
+    <article className="rounded-3xl border border-[#e1e5ec] bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold text-[#707887]">{label}</p>
+          <p className="mt-2 text-3xl font-black">{value}</p>
+          <p className="mt-2 text-xs text-[#9097a3]">{note}</p>
+        </div>
+        <span className="grid size-10 place-items-center rounded-2xl bg-[#fff6dc] text-[#a27b28]">{icon}</span>
+      </div>
+    </article>
+  );
+}
+
+function QuickLink({ href, title, note, symbol }: { href: string; title: string; note: string; symbol: string }) {
+  return (
+    <Link href={href} className="flex items-center gap-3 rounded-2xl border border-[#e7eaf0] p-3.5 transition hover:border-[#d8b35b] hover:bg-[#fffaf0]">
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#071426] font-black text-[#f0cf7a]">{symbol}</span>
+      <span className="min-w-0">
+        <span className="block text-sm font-black">{title}</span>
+        <span className="mt-0.5 block text-xs text-[#7a8190]">{note}</span>
+      </span>
+    </Link>
   );
 }
