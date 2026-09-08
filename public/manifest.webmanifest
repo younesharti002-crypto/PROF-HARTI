@@ -1,13 +1,13 @@
 {
-  "name": "PROF HARTI Academy",
-  "short_name": "PROF HARTI",
-  "description": "فضاء PROF HARTI Academy للدروس، البث المباشر، الإعادات، التمارين والنتائج.",
+  "name": "PROF BERRADA Math Academy",
+  "short_name": "PROF BERRADA",
+  "description": "فضاء PROF BERRADA للرياضيات: دروس، حصص مباشرة، تسجيلات، تمارين ونتائج لتلاميذ الإعدادي.",
   "id": "/ar",
   "start_url": "/ar",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#050b13",
-  "theme_color": "#050b13",
+  "background_color": "#071426",
+  "theme_color": "#071426",
   "lang": "ar",
   "dir": "rtl",
   "icons": [
@@ -38,7 +38,7 @@
       "icons": [{ "src": "/icons/icon-192-v2.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "البث المباشر",
+      "name": "الحصص المباشرة",
       "short_name": "Live",
       "url": "/ar/live",
       "icons": [{ "src": "/icons/icon-192-v2.png", "sizes": "192x192", "type": "image/png" }]
